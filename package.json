@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "description": "Javascript Utilities",
   "main": "main.js",
+  "public": "true",
   "scripts": {
     "build": "rollup -c"
   },
@@ -22,7 +23,9 @@
   },
   "homepage": "https://github.com/waelio/utils#readme",
   "devDependencies": {
-    "rollup": "^2.43.0"
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "rollup": "^2.43.0",
+    "the-answer": "^1.0.0"
   },
   "browserslist": [
     "last 10 Chrome versions",
