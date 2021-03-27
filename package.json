@@ -1,0 +1,38 @@
+{
+  "name": "@waelio/utils",
+  "version": "1.0.0",
+  "description": "Javascript Utilities",
+  "main": "main.js",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/waelio/utils.git"
+  },
+  "keywords": [
+    "Javascript",
+    "Utilities",
+    "helpers"
+  ],
+  "author": "Wael Wahbeh <wahbehw@gmail.com> (https://waelio.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/waelio/utils/issues"
+  },
+  "homepage": "https://github.com/waelio/utils#readme",
+  "devDependencies": {
+    "rollup": "^2.43.0"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ]
+}
