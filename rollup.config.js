@@ -1,17 +1,43 @@
 import resolve from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
+import commonjs from '@rollup/plugin-commonjs';
 
-export default 
-  [{
-    input: 'src/store.js',
-    plugins: [ resolve() ],
+export default [
+  {
+    input: 'src/plugins',
+    plugins: [resolve(), json(), commonjs()],
     output: {
-      file: 'dist/store.js',
+      file: 'dist/plugins.js',
+      format: 'es'
+    }
+  },
+  {
+    input: 'src/plugins/config',
+    plugins: [resolve(), json(), commonjs()],
+    output: {
+      file: 'dist/config.js',
       format: 'cjs'
     }
   },
   {
-    input: 'src/utils.js',
-    plugins: [ resolve() ],
+    input: 'src/plugins/note',
+    plugins: [resolve(), json(), commonjs()],
+    output: {
+      file: 'dist/note.js',
+      format: 'es'
+    }
+  },
+  {
+    input: 'src/plugins/store',
+    plugins: [resolve(), json(), commonjs()],
+    output: {
+      file: 'dist/store.js',
+      format: 'es'
+    }
+  },
+  {
+    input: 'src/utils',
+    plugins: [resolve(), json(), commonjs()],
     output: [
       {
         file: 'dist/waelioUtils.js',
@@ -27,5 +53,5 @@ export default
         format: 'es'
       }
     ]
-  }  
-  ]
+  }
+];

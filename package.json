@@ -2,7 +2,7 @@
   "name": "@waelio/utils",
   "version": "1.1.2",
   "description": "Javascript Utilities",
-  "main": "main.js",
+  "main": "/dist/waelioUtil.js",
   "public": "true",
   "scripts": {
     "build": "rollup -c"
@@ -23,9 +23,13 @@
   },
   "homepage": "https://github.com/waelio/utils#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^18.0.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
+    "quasar": "^1.15.9",
     "rollup": "^2.43.0",
-    "the-answer": "^1.0.0"
+    "the-answer": "^1.0.0",
+    "vue": "^2.6.12"
   },
   "browserslist": [
     "last 10 Chrome versions",

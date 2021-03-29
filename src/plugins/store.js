@@ -1,19 +1,10 @@
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-function createCommonjsModule(fn) {
-  var module = { exports: {} };
-	return fn(module, module.exports), module.exports;
-}
-
 /**
  * Copyright (c) 2018, ESHA Research
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  */
-
-var store = createCommonjsModule(function (module) {
-(function(window, define) {
+;(function(window, define) {
     var _ = {
         version: "<%= pkg.version %>",
         areas: {},
@@ -269,7 +260,7 @@ var store = createCommonjsModule(function (module) {
         define('store2', [], function () {
             return store;
         });
-    } else if (module.exports) {
+    } else if (typeof module !== 'undefined' && module.exports) {
         module.exports = store;
     } else {
         // expose the primary store fn to the global object and save conflicts
@@ -277,7 +268,4 @@ var store = createCommonjsModule(function (module) {
         window.store = store;
     }
 
-})(commonjsGlobal, commonjsGlobal && commonjsGlobal.define);
-});
-
-export default store;
+})(this, this && this.define);
