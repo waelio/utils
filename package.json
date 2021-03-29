@@ -1,6 +1,6 @@
 {
   "name": "@waelio/utils",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "Javascript Utilities",
   "main": "/dist/waelioUtil.js",
   "public": "true",
