@@ -1,7 +1,7 @@
 const path = require('path');
 module.exports = {
   mode: "production", // "production" | "development" | "none"
-  entry: "./, // string | object | array
+  entry: "./, // string | object | array"
   // defaults to ./src
 
   output: {
