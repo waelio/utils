@@ -2,15 +2,15 @@
   "name": "@waelio/utils",
   "version": "2.0.4",
   "description": "Javascript Utilities",
-  "main": "./dist/waelioUtil.js",
+  "main": "dist/waelioUtil.js",
   "files": [
-    "./dist/config.js",
-    "./dist/note.js",
-    "./dist/plugins.js",
-    "./dist/store.js",
-    "./dist/waelioUtils-es.js",
-    "./dist/waelioUtils-umd.js",
-    "./dist/waelioUtils.js"
+    "dist/config.js",
+    "dist/note.js",
+    "dist/plugins.js",
+    "dist/store.js",
+    "dist/waelioUtils-es.js",
+    "dist/waelioUtils-umd.js",
+    "dist/waelioUtils.js"
   ],
   "public": "true",
   "scripts": {
