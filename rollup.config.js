@@ -1,6 +1,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
+import copy from 'rollup-plugin-copy';
 
 export default [
   {
@@ -26,7 +27,14 @@ export default [
   },
   {
     input: 'src/plugins/config',
-    plugins: [resolve(), json(), commonjs()],
+    plugins: [
+      resolve(),
+      json(),
+      commonjs(),
+      copy({
+        targets: [{ src: 'config/**/*', dest: 'config' }]
+      })
+    ],
     output: [
       {
         name: 'config',

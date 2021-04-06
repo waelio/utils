@@ -5,12 +5,7 @@ const plugin = {
   config,
   storage,
   store,
-  note
-};
-export default {
-  plugin,
-  config,
-  storage,
-  store,
+  note,
   Notify
 };
+export { plugin, config, storage, store, note, Notify };

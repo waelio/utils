@@ -45,6 +45,7 @@
     "@rollup/plugin-node-resolve": "^11.2.1",
     "quasar": "^1.15.9",
     "rollup": "^2.43.0",
+    "rollup-plugin-copy": "^3.4.0",
     "the-answer": "^1.0.0",
     "vue": "^2.6.12"
   }

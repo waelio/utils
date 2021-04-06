@@ -1,15 +1,4 @@
-import * as plugins from './plugins';
-import config from './plugins/config';
-import note from './plugins/note';
-import * as store from './plugins/store';
+import { plugin, config, storage, store, note, Notify } from './plugins';
 import * as utils from './utils';
 
-export default {
-  plugins,
-  config,
-  note,
-  store,
-  utils
-};
-
-export { plugins, config, note, store, utils };
+export { plugin, config, storage, store, note, Notify, utils };
