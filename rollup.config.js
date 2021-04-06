@@ -32,7 +32,7 @@ export default [
       json(),
       commonjs(),
       copy({
-        targets: [{ src: 'src/config', dest:   'dist/config' }]
+        targets: [{ src: 'src/config', dest: 'dist/' }]
       })
     ],
     output: [

@@ -121,7 +121,7 @@ class Config {
     let clientVars;
 
     try {
-      clientVars = require(path + '/config/client');
+      clientVars = require('./config/client');
     } catch (e) {
       clientVars = {};
 
@@ -137,7 +137,7 @@ class Config {
     let overrides;
     const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
     try {
-      overrides = process.env.NODE_ENV === 'production' ? require(path + '/config/prod') : require(path + '/config/dev');
+      overrides = process.env.NODE_ENV === 'production' ? require( './config/prod') : require( './config/dev');
 
       console.warn(`FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`);
     } catch (e) {
