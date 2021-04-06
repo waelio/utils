@@ -280,8 +280,4 @@ var store2 = createCommonjsModule(function (module) {
 })(commonjsGlobal, commonjsGlobal && commonjsGlobal.define);
 });
 
-var store2$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.assign(/*#__PURE__*/Object.create(null), store2, {
-	'default': store2
-}));
-
-exports.store = store2$1;
+exports.store = store2;

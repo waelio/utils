@@ -4,9 +4,9 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.plugins = {}));
 }(this, (function (exports) { 'use strict';
 
-  const {store} = require('./store');
+  const { store } = require('./store');
   const path = require('path');
-  const Storage = store.namespace('config');
+  const Storage = store.namespace('app');
   class Config {
     constructor() {
       const self = this;
@@ -139,7 +139,7 @@
       let overrides;
       const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
       try {
-        overrides = process.env.NODE_ENV === 'production' ? require(path +'/config/prod') : require(path+ '/config/dev');
+        overrides = process.env.NODE_ENV === 'production' ? require(path + '/config/prod') : require(path + '/config/dev');
 
         console.warn(`FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`);
       } catch (e) {
