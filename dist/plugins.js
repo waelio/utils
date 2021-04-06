@@ -139,7 +139,7 @@
       let overrides;
       const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
       try {
-        overrides = process.env.NODE_ENV === 'production' ? require('app/config/prod') : require('app/config/dev');
+        overrides = process.env.NODE_ENV === 'production' ? require(path +'/config/prod') : require(path+ '/config/dev');
 
         console.warn(`FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`);
       } catch (e) {
