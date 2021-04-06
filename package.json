@@ -20,6 +20,9 @@
     "dist/waelioUtils.cjs",
     "dist/waelioUtils.js"
   ],
+  "directories": {
+    "config": "dist/config"
+  },
   "public": "true",
   "scripts": {
     "build": "rollup -c"
