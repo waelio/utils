@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/@waelio/utils/dist/waelioUtils-umd.js"></script>
+  <script src="https://unpkg.com/@waelio/utils/dist/waelioUtils"></script>
   <title>Waelio Utils</title>
 </head>
 <body>
@@ -22,7 +22,7 @@
     document.getElementById('camelToSnake').innerHTML=waelioUtils.camelToSnake(payload,true);
     document.getElementById('snakeToCamel').innerHTML=waelioUtils.snakeToCamel(payload,true);
     document.getElementById('generateId').innerHTML=waelioUtils.generateId();
-    // waelioUtils.notifyMe('Hi')
+    waelioUtils.notifyMe('Hi')
     note.success('success')
   </script>
 </body>
