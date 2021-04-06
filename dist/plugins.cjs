@@ -1,7 +1,9 @@
 'use strict';
 
-const store = require('./store');
+Object.defineProperty(exports, '__esModule', { value: true });
 
+const {store} = require('./store');
+const path = require('path');
 const Storage = store.namespace('config');
 class Config {
   constructor() {
@@ -104,7 +106,7 @@ class Config {
 
     if (this._env === 'server') {
       try {
-        serverVars = require('app/config/server');
+        serverVars = require(path + '/config/server');
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
           console.warn("Didn't find a server config in `./config`.");
@@ -119,7 +121,7 @@ class Config {
     let clientVars;
 
     try {
-      clientVars = require('app/config/client');
+      clientVars = require(path + '/config/client');
     } catch (e) {
       clientVars = {};
 
@@ -4405,13 +4407,13 @@ var has = {};
 var circular = {};
 var waiting = false;
 var flushing = false;
-var index$1 = 0;
+var index = 0;
 
 /**
  * Reset the scheduler's state.
  */
 function resetSchedulerState () {
-  index$1 = queue.length = activatedChildren.length = 0;
+  index = queue.length = activatedChildren.length = 0;
   has = {};
   if (process.env.NODE_ENV !== 'production') {
     circular = {};
@@ -4470,8 +4472,8 @@ function flushSchedulerQueue () {
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
-  for (index$1 = 0; index$1 < queue.length; index$1++) {
-    watcher = queue[index$1];
+  for (index = 0; index < queue.length; index++) {
+    watcher = queue[index];
     if (watcher.before) {
       watcher.before();
     }
@@ -4556,7 +4558,7 @@ function queueWatcher (watcher) {
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       var i = queue.length - 1;
-      while (i > index$1 && queue[i].id > watcher.id) {
+      while (i > index && queue[i].id > watcher.id) {
         i--;
       }
       queue.splice(i + 1, 0, watcher);
@@ -42901,14 +42903,13 @@ const plugin = {
   config: config$2,
   storage,
   store,
-  note
-};
-var index = {
-  plugin,
-  config: config$2,
-  storage,
-  store,
+  note,
   Notify
 };
 
-module.exports = index;
+exports.Notify = Notify;
+exports.config = config$2;
+exports.note = note;
+exports.plugin = plugin;
+exports.storage = storage;
+exports.store = store;

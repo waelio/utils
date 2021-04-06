@@ -2,8 +2,8 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-const store = require('./store');
-
+const {store} = require('./store');
+const path = require('path');
 const Storage = store.namespace('config');
 class Config {
   constructor() {
@@ -106,7 +106,7 @@ class Config {
 
     if (this._env === 'server') {
       try {
-        serverVars = require('app/config/server');
+        serverVars = require(path + '/config/server');
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
           console.warn("Didn't find a server config in `./config`.");
@@ -121,7 +121,7 @@ class Config {
     let clientVars;
 
     try {
-      clientVars = require('app/config/client');
+      clientVars = require(path + '/config/client');
     } catch (e) {
       clientVars = {};
 

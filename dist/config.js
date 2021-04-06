@@ -4,8 +4,8 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.config = {}));
 }(this, (function (exports) { 'use strict';
 
-  const store = require('./store');
-
+  const {store} = require('./store');
+  const path = require('path');
   const Storage = store.namespace('config');
   class Config {
     constructor() {
@@ -108,7 +108,7 @@
 
       if (this._env === 'server') {
         try {
-          serverVars = require('app/config/server');
+          serverVars = require(path + '/config/server');
         } catch (e) {
           if (process.env.NODE_ENV === 'development') {
             console.warn("Didn't find a server config in `./config`.");
@@ -123,7 +123,7 @@
       let clientVars;
 
       try {
-        clientVars = require('app/config/client');
+        clientVars = require(path + '/config/client');
       } catch (e) {
         clientVars = {};
 

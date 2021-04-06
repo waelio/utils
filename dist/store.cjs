@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn) {
@@ -10,7 +12,7 @@ function createCommonjsModule(fn) {
 /*! store2 - v2.12.0 - 2020-08-12
 * Copyright (c) 2020 Nathan Bubna; Licensed (MIT OR GPL-3.0) */
 
-var store = createCommonjsModule(function (module) {
+var store2 = createCommonjsModule(function (module) {
 (function(window, define) {
     var _ = {
         version: "2.12.0",
@@ -278,4 +280,8 @@ var store = createCommonjsModule(function (module) {
 })(commonjsGlobal, commonjsGlobal && commonjsGlobal.define);
 });
 
-module.exports = store;
+var store2$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.assign(/*#__PURE__*/Object.create(null), store2, {
+	'default': store2
+}));
+
+exports.store = store2$1;

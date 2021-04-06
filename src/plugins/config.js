@@ -1,4 +1,4 @@
-const store = require('./store');
+const {store} = require('./store');
 const path = require('path');
 const Storage = store.namespace('config');
 class Config {
