@@ -1,12 +1,8 @@
-/**
- * Copyright (c) 2018, ESHA Research
- * Dual licensed under the MIT and GPL licenses:
- *   http://www.opensource.org/licenses/mit-license.php
- *   http://www.gnu.org/licenses/gpl.html
- */
+/*! store2 - v2.12.0 - 2020-08-12
+* Copyright (c) 2020 Nathan Bubna; Licensed (MIT OR GPL-3.0) */
 ;(function(window, define) {
     var _ = {
-        version: "<%= pkg.version %>",
+        version: "2.12.0",
         areas: {},
         apis: {},
 

@@ -2,15 +2,15 @@
   "name": "@waelio/utils",
   "version": "2.0.1",
   "description": "Javascript Utilities",
-  "main": "/dist/waelioUtil.js",
+  "main": "./dist/waelioUtil.js",
   "files": [
-    "/dist/config.js",
-    "/dist/note.js",
-    "/dist/plugins.js",
-    "/dist/store.js",
-    "/dist/waelioUtils-es.js",
-    "/dist/waelioUtils-umd.js",
-    "/dist/waelioUtils.js"
+    "./dist/config.js",
+    "./dist/note.js",
+    "./dist/plugins.js",
+    "./dist/store.js",
+    "./dist/waelioUtils-es.js",
+    "./dist/waelioUtils-umd.js",
+    "./dist/waelioUtils.js"
   ],
   "public": "true",
   "scripts": {
@@ -39,16 +39,5 @@
     "rollup": "^2.43.0",
     "the-answer": "^1.0.0",
     "vue": "^2.6.12"
-  },
-  "browserslist": [
-    "last 10 Chrome versions",
-    "last 10 Firefox versions",
-    "last 4 Edge versions",
-    "last 7 Safari versions",
-    "last 8 Android versions",
-    "last 8 ChromeAndroid versions",
-    "last 8 FirefoxAndroid versions",
-    "last 10 iOS versions",
-    "last 5 Opera versions"
-  ]
+  }
 }
