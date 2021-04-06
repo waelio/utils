@@ -4,6 +4,10 @@
   "description": "Javascript Utilities",
   "main": "dist/waelioUtil.js",
   "files": [
+    "dist/config/client.js",
+    "dist/config/dev.js",
+    "dist/config/prod.js",
+    "dist/config/server.js",
     "dist/config.ejs",
     "dist/config.cjs",
     "dist/config.js",
