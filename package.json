@@ -47,6 +47,7 @@
   },
   "homepage": "https://github.com/waelio/utils#readme",
   "devDependencies": {
+    "@quasar/app": "^2.2.4",
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
