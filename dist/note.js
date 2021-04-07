@@ -4,7 +4,7 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.note = {}));
 }(this, (function (exports) { 'use strict';
 
-  var version = "1.15.9";
+  var version = "1.15.10";
 
   /*!
    * Vue.js v2.6.12
