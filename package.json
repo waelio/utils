@@ -1,6 +1,6 @@
 {
   "name": "@waelio/utils",
-  "version": "2.0.16",
+  "version": "3.0.0",
   "description": "Javascript Utilities",
   "main": "dist/waelioUtil.js",
   "files": [
@@ -8,24 +8,18 @@
     "dist/config/dev.js",
     "dist/config/prod.js",
     "dist/config/server.js",
-
-
     "dist/config.ejs",
     "dist/config.ejs.map",
     "dist/config.js",
     "dist/config.js.map",
-
     "dist/note.ejs",
     "dist/note.ejs.map",
     "dist/note.js",
     "dist/note.js.map",
-
-
     "dist/store.ejs",
     "dist/store.ejs.map",
     "dist/store.js",
     "dist/store.js.map"
-
   ],
   "directories": {
     "config": "dist/config"
