@@ -23,7 +23,8 @@
     "dist/store.js.map"
   ],
   "directories": {
-    "config": "dist/config"
+    "config": "dist/config",
+    "dist": "dist"
   },
   "public": "true",
   "scripts": {
@@ -38,7 +39,10 @@
     "Javascript",
     "Utilities",
     "helpers",
-    "browser"
+    "browser",
+    "config",
+    "store",
+    "notification"
   ],
   "author": "Wael Wahbeh <wahbehw@gmail.com> (https://waelio.com/)",
   "license": "MIT",

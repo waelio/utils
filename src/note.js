@@ -1,3 +1,5 @@
+const Vue = require('vue')
+const Quasar = require('quasar')
 const {
   Notify,
   Dialog,
@@ -13,7 +15,10 @@ const {
   defaultStyles,
   loadingDefaults,
 } = require('./defaults')
-
+Vue.use(Quasar, {
+  plugins: [Notify, Dialog, LoadingBar, Loading],
+  extras: ['fontawesome-v5'],
+})
 Notify.setDefaults(notifyDefaults)
 LoadingBar.setDefaults(loadingBarDefaults)
 

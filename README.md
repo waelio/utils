@@ -34,19 +34,19 @@ Documentation & examples coming soon. Needs more testing 😃
 
 # Note
 
-## Note is partially based on [Quasars Notify](https://quasar.dev/quasar-plugins/notify)
+### Note is partially based on [Quasars Notify](https://quasar.dev/quasar-plugins/notify)
 
 Examples:
 
-````js
-import { note } from '@waelio/utils/dist/note'
+```js
+import { note } from '@waelio/utils/dist/note';
 
-note.success('Hi')
-note.info('Hi')
-note.warning('Hi')
-note.error('Hi')
+note.success('Hi');
+note.info('Hi');
+note.warning('Hi');
+note.error('Hi');
 
 // Log
-note.log('Hi from console')
-note.log('Hi from console')
-````
+note.log('Hi from console');
+note.log('Hi from console');
+```

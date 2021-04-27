@@ -1,11 +1,13 @@
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
 import copy from 'rollup-plugin-copy'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
 
 export default [
   {
     input: 'src/config',
     plugins: [
+      nodePolyfills(),
       resolve(),
       json(),
       copy({
@@ -32,6 +34,7 @@ export default [
   {
     input: 'src/note',
     plugins: [
+      nodePolyfills(),
       resolve(),
       json(),
       copy({
@@ -57,7 +60,7 @@ export default [
   }, //Note
   {
     input: 'src/store',
-    plugins: [resolve(), json()],
+    plugins: [nodePolyfills(), resolve(), json()],
     output: [
       {
         name: 'store',
