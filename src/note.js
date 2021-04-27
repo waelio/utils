@@ -1,4 +1,4 @@
-import Vue from 'vue'
+window.Vue = require('vue').default
 import Quasar, {
   Notify,
   Dialog,
