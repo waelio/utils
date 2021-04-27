@@ -32,6 +32,9 @@ export default [
   {
     input: 'src/note',
     plugins: [resolve(), json()],
+    copy({
+      targets: [{ src: 'src/defaults', dest: 'dist/' }],
+    }),
     output: [
       {
         name: 'note',

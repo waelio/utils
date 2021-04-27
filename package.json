@@ -2,7 +2,7 @@
   "name": "@waelio/utils",
   "version": "3.0.0",
   "description": "Javascript Utilities",
-  "main": "dist/waelioUtil.js",
+  "main": "dist/config",
   "files": [
     "dist/config/client.js",
     "dist/config/dev.js",
@@ -12,6 +12,7 @@
     "dist/config.ejs.map",
     "dist/config.js",
     "dist/config.js.map",
+    "dist/defaults.ejs",
     "dist/note.ejs",
     "dist/note.ejs.map",
     "dist/note.js",
@@ -36,7 +37,8 @@
   "keywords": [
     "Javascript",
     "Utilities",
-    "helpers"
+    "helpers",
+    "browser"
   ],
   "author": "Wael Wahbeh <wahbehw@gmail.com> (https://waelio.com/)",
   "license": "MIT",
