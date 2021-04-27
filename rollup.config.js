@@ -31,10 +31,13 @@ export default [
   }, //Config
   {
     input: 'src/note',
-    plugins: [resolve(), json()],
-    copy({
-      targets: [{ src: 'src/defaults', dest: 'dist/' }],
-    }),
+    plugins: [
+      resolve(),
+      json(),
+      copy({
+        targets: [{ src: 'src/defaults.js', dest: 'dist/' }],
+      }),
+    ],
     output: [
       {
         name: 'note',
