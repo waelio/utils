@@ -1,5 +1,5 @@
-const Vue = require('vue/dist/vue.min.js')
-const Quasar = require('quasar')
+import Vue from 'vue'
+import Quasar from 'quasar'
 const {
   Notify,
   Dialog,
