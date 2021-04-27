@@ -1,20 +1,19 @@
 import Vue from 'vue'
-import Quasar from 'quasar'
-const {
+import Quasar, {
   Notify,
   Dialog,
   Dark,
   LoadingBar,
   Loading,
   QSpinnerGears,
-} = require('quasar')
-const {
+} from 'quasar'
+import {
   dialogDefaults,
   notifyDefaults,
   loadingBarDefaults,
   defaultStyles,
   loadingDefaults,
-} = require('./defaults')
+} from './defaults'
 
 Vue.use(Quasar, {
   config: {
