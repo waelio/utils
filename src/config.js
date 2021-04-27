@@ -161,7 +161,5 @@ class Config {
   }
 }
 
-const config = new Config();
-const storage = Storage;
-
-export { store, config, storage };
+exports.config = new Config();
+exports.storage = Storage

@@ -1,8 +1,7 @@
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-  typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.config = {}));
-}(this, (function (exports) { 'use strict';
+(function (factory) {
+  typeof define === 'function' && define.amd ? define(factory) :
+  factory();
+}((function () { 'use strict';
 
   const { store } = require('./store');
   const path = require('path');
@@ -167,13 +166,8 @@
     }
   }
 
-  const config = new Config();
-  const storage = Storage;
-
-  exports.config = config;
-  exports.storage = storage;
-  exports.store = store;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
+  exports.config = new Config();
+  exports.storage = Storage;
 
 })));
+//# sourceMappingURL=config.js.map

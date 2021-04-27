@@ -1,0 +1,1 @@
+{"version":3,"file":"store.ejs","sources":["../src/store.js"],"sourcesContent":["const store2 = require('store2')\r\nexports.store = store2\r\n"],"names":[],"mappings":"AAAA,MAAM,MAAM,GAAG,OAAO,CAAC,QAAQ,EAAC;AAChC,OAAO,CAAC,KAAK,GAAG"}
