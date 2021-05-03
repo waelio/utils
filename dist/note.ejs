@@ -10,14 +10,17 @@ const {
 } = require('quasar');
 const {
   dialogDefaults,
-  notifyDefaults,
   loadingBarDefaults,
   defaultStyles,
   loadingDefaults,
-} = require('./defaults');
+  notifyDefaults,
+} = require('./statics');
+
 Vue.use(Quasar, {
-  plugins: [Notify, Dialog, LoadingBar, Loading],
-  extras: ['fontawesome-v5'],
+  config: {
+    plugins: ['Notify', 'Dialog', 'LoadingBar', 'Loading'],
+    extras: ['fontawesome-v5'],
+  },
 });
 Notify.setDefaults(notifyDefaults);
 LoadingBar.setDefaults(loadingBarDefaults);

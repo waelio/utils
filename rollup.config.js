@@ -38,7 +38,7 @@ export default [
       resolve(),
       json(),
       copy({
-        targets: [{ src: 'src/defaults.js', dest: 'dist/' }],
+        targets: [{ src: 'src/statics.js', dest: 'dist/' }],
       }),
     ],
     output: [
@@ -78,4 +78,24 @@ export default [
       },
     ],
   }, //Store
+  {
+    input: 'main.js',
+    plugins: [nodePolyfills(), resolve(), json()],
+    output: [
+      {
+        name: 'Utils',
+        file: 'dist/utils.ejs',
+        format: 'esm',
+        exports: 'named',
+        sourcemap: true,
+      },
+      {
+        name: 'Utils',
+        file: 'dist/utils.js',
+        format: 'umd',
+        exports: 'named',
+        sourcemap: true,
+      },
+    ],
+  },
 ]

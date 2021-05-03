@@ -1,23 +1,24 @@
-window.Vue = require('vue').default
-import Quasar, {
+const Vue = require('vue')
+const Quasar = require('quasar')
+const {
   Notify,
   Dialog,
   Dark,
   LoadingBar,
   Loading,
   QSpinnerGears,
-} from 'quasar'
-import {
+} = require('quasar')
+const {
   dialogDefaults,
-  notifyDefaults,
   loadingBarDefaults,
   defaultStyles,
   loadingDefaults,
-} from './defaults'
+  notifyDefaults,
+} = require('./statics')
 
 Vue.use(Quasar, {
   config: {
-    plugins: [Notify, Dialog, LoadingBar, Loading],
+    plugins: ['Notify', 'Dialog', 'LoadingBar', 'Loading'],
     extras: ['fontawesome-v5'],
   },
 })

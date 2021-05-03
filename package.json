@@ -12,7 +12,7 @@
     "dist/config.ejs.map",
     "dist/config.js",
     "dist/config.js.map",
-    "dist/defaults.js",
+    "dist/statics.js",
     "dist/note.ejs",
     "dist/note.ejs.map",
     "dist/note.js",

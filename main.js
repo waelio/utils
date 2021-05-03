@@ -1,6 +1,4 @@
-const { store } = require('./store')
-const { config, storage } = require('./config')
-const { note, Notify } = require('./note')
+const { store, config, storage, note, Notify, Utils } = require('./src')
 
 exports.store = store
 exports.config = config
