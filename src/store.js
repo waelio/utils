@@ -1,2 +1,2 @@
-const store2 = require('store2')
-exports.store = store2
+import store2 from 'store2'
+export { store as store2 }

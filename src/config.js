@@ -1,5 +1,5 @@
-const { store } = require('./store')
-const path = require('path')
+import { store } from './store'
+import path from 'path'
 const Storage = store.namespace('app')
 class Config {
   constructor() {
