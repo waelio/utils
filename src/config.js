@@ -1,14 +1,14 @@
-const { store } = require('./store');
-const path = require('path');
-const Storage = store.namespace('app');
+const { store } = require('./store')
+const path = require('path')
+const Storage = store.namespace('app')
 class Config {
   constructor() {
-    const self = this;
-    self.setEnvironment();
-    self._storage = Storage;
-    self._server = self.getServerVars();
-    self._client = self.getClientVars();
-    self._dev = self.getUrgentOverrides();
+    const self = this
+    self.setEnvironment()
+    self._storage = Storage
+    self._server = self.getServerVars()
+    self._client = self.getClientVars()
+    self._dev = self.getUrgentOverrides()
 
     self._store = Object.assign(
       {},
@@ -17,149 +17,156 @@ class Config {
       { ...self._dev.default },
       { client: self._client.default },
       { server: self._server.default ? self._server.default : self._server },
-      { dev: self._dev.default }
-    );
+      { dev: self._dev.default },
+    )
     // Do not Merge the Storage ;)
-    self._store.storage = self._storage;
+    self._store.storage = self._storage
     // console.log("this._store", this._store);
   }
 
   set(key, value) {
     if (key.match(/:/)) {
-      const keys = key.split(':');
-      let storeKey = this._store;
+      const keys = key.split(':')
+      let storeKey = this._store
 
       keys.forEach(function (k, i) {
         if (keys.length === i + 1) {
-          storeKey[k] = value;
+          storeKey[k] = value
         }
 
         if (storeKey[k] === undefined) {
-          storeKey[k] = {};
+          storeKey[k] = {}
         }
 
-        storeKey = storeKey[k];
-      });
+        storeKey = storeKey[k]
+      })
     } else {
-      this._store[key] = value;
+      this._store[key] = value
     }
   }
 
   getAll() {
-    return this._store;
+    return this._store
   }
 
   getItem(key) {
-    return this._store[key];
+    return this._store[key]
   }
 
   get(key) {
     // Is the key a nested object
     if (key.match(/:/)) {
       // Transform getter string into object
-      const storeKey = this.buildNestedKey(key);
-      return storeKey;
+      const storeKey = this.buildNestedKey(key)
+      return storeKey
     }
 
     // Return regular key
-    return this._store[key];
+    return this._store[key]
   }
 
   client() {
-    return this.getItem('client');
+    return this.getItem('client')
   }
 
   dev() {
-    return this.getItem('dev');
+    return this.getItem('dev')
   }
 
   storage() {
-    return this._store.storage;
+    return this._store.storage
   }
 
   server() {
-    return this.getItem('server');
+    return this.getItem('server')
   }
 
   store() {
-    return this._store;
+    return this._store
   }
 
   has(key) {
-    return Boolean(this.get(key));
+    return Boolean(this.get(key))
   }
 
   setEnvironment() {
     if (process.browser) {
-      this._env = 'client';
+      this._env = 'client'
     } else {
-      this._env = 'server';
+      this._env = 'server'
     }
   }
 
   getServerVars() {
-    let serverVars = {};
+    let serverVars = {}
 
     if (this._env === 'server') {
       try {
-        serverVars = require(path + '/config/server');
+        serverVars = require(path + '/config/server')
       } catch (e) {
         if (process.env.NODE_ENV === 'development') {
-          console.warn("Didn't find a server config in `./config`.");
+          console.warn("Didn't find a server config in `./config`.")
         }
       }
     }
 
-    return serverVars;
+    return serverVars
   }
 
   getClientVars() {
-    let clientVars;
+    let clientVars
 
     try {
-      clientVars = require('./config/client');
+      clientVars = require('./config/client')
     } catch (e) {
-      clientVars = {};
+      clientVars = {}
 
       if (process.env.NODE_ENV === 'development') {
-        console.warn("Didn't find a client config in `./config`.");
+        console.warn("Didn't find a client config in `./config`.")
       }
     }
 
-    return clientVars;
+    return clientVars
   }
 
   getUrgentOverrides() {
-    let overrides;
-    const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
+    let overrides
+    const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev'
     try {
-      overrides = process.env.NODE_ENV === 'production' ? require( './config/prod') : require( './config/dev');
+      overrides =
+        process.env.NODE_ENV === 'production'
+          ? require('./config/prod')
+          : require('./config/dev')
 
-      console.warn(`FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`);
+      console.warn(
+        `FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`,
+      )
     } catch (e) {
-      overrides = {};
+      overrides = {}
     }
 
-    return overrides;
+    return overrides
   }
 
   // Builds out a nested key to get nested values
   buildNestedKey(nestedKey) {
     // Transform getter string into object
-    const keys = nestedKey.split(':');
-    let storeKey = this._store;
+    const keys = nestedKey.split(':')
+    let storeKey = this._store
 
     keys.forEach(function (k) {
       try {
-        storeKey = storeKey[k];
+        storeKey = storeKey[k]
       } catch (e) {
-        return undefined;
+        return undefined
       }
-    });
+    })
 
-    return storeKey;
+    return storeKey
   }
 }
 
-exports.config = new Config();
-exports.storage = Storage
+const config = new Config(),
+  storage = Storage
+
+export { config, storage }

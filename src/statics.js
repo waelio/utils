@@ -47,19 +47,10 @@ const dialogDefaults = {
     },
   }
 
-
-exports.dialogDefaults = dialogDefaults
-exports.notifyDefaults = notifyDefaults
-exports.loadingBarDefaults = loadingBarDefaults
-exports.defaultStyles = defaultStyles
-exports.loadingDefaults = loadingDefaults
-
-
-
-module.exports = {
-  dialogDefaults: dialogDefaults,
-  notifyDefaults: notifyDefaults,
-  loadingBarDefaults: loadingBarDefaults,
-  defaultStyles: defaultStyles,
-  loadingDefaults: defaultStyles,
+export {
+  dialogDefaults,
+  notifyDefaults,
+  loadingBarDefaults,
+  defaultStyles,
+  loadingDefaults,
 }

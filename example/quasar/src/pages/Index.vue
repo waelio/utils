@@ -4,14 +4,13 @@
   </q-page>
 </template>
 <script>
- import { utils } from '@waelio/utils/dist/';
- console.log('%cMyProject%cline:7%cutils', 'color:#fff;background:#ee6f57;padding:3px;border-radius:2px', 'color:#fff;background:#1f3c88;padding:3px;border-radius:2px', 'color:#fff;background:rgb(38, 157, 128);padding:3px;border-radius:2px', utils)
-
+ import { config } from '@waelio/utils/dist/config';
+ import { note } from '@waelio/utils/dist/note';
 export default {
   name: "PageIndex",
   mounted() {
-    // this.conf = config.get("client");
-    // note.success("mounted");
+    this.conf = config.get("client");
+    note.success("mounted");
   },
   data() {
     return {

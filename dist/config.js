@@ -1,7 +1,8 @@
-(function (factory) {
-  typeof define === 'function' && define.amd ? define(factory) :
-  factory();
-}((function () { 'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.config = {}));
+}(this, (function (exports) { 'use strict';
 
   const { store } = require('./store');
   const path = require('path');
@@ -22,7 +23,7 @@
         { ...self._dev.default },
         { client: self._client.default },
         { server: self._server.default ? self._server.default : self._server },
-        { dev: self._dev.default }
+        { dev: self._dev.default },
       );
       // Do not Merge the Storage ;)
       self._store.storage = self._storage;
@@ -51,11 +52,11 @@
     }
 
     getAll() {
-      return this._store;
+      return this._store
     }
 
     getItem(key) {
-      return this._store[key];
+      return this._store[key]
     }
 
     get(key) {
@@ -63,35 +64,35 @@
       if (key.match(/:/)) {
         // Transform getter string into object
         const storeKey = this.buildNestedKey(key);
-        return storeKey;
+        return storeKey
       }
 
       // Return regular key
-      return this._store[key];
+      return this._store[key]
     }
 
     client() {
-      return this.getItem('client');
+      return this.getItem('client')
     }
 
     dev() {
-      return this.getItem('dev');
+      return this.getItem('dev')
     }
 
     storage() {
-      return this._store.storage;
+      return this._store.storage
     }
 
     server() {
-      return this.getItem('server');
+      return this.getItem('server')
     }
 
     store() {
-      return this._store;
+      return this._store
     }
 
     has(key) {
-      return Boolean(this.get(key));
+      return Boolean(this.get(key))
     }
 
     setEnvironment() {
@@ -115,7 +116,7 @@
         }
       }
 
-      return serverVars;
+      return serverVars
     }
 
     getClientVars() {
@@ -131,21 +132,26 @@
         }
       }
 
-      return clientVars;
+      return clientVars
     }
 
     getUrgentOverrides() {
       let overrides;
       const filename = process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
       try {
-        overrides = process.env.NODE_ENV === 'production' ? require( './config/prod') : require( './config/dev');
+        overrides =
+          process.env.NODE_ENV === 'production'
+            ? require('./config/prod')
+            : require('./config/dev');
 
-        console.warn(`FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`);
+        console.warn(
+          `FYI: data in \`./config/${filename}.js\` file will override Server & Client equal data/values.`,
+        );
       } catch (e) {
         overrides = {};
       }
 
-      return overrides;
+      return overrides
     }
 
     // Builds out a nested key to get nested values
@@ -158,16 +164,21 @@
         try {
           storeKey = storeKey[k];
         } catch (e) {
-          return undefined;
+          return undefined
         }
       });
 
-      return storeKey;
+      return storeKey
     }
   }
 
-  exports.config = new Config();
-  exports.storage = Storage;
+  const config = new Config(),
+    storage = Storage;
+
+  exports.config = config;
+  exports.storage = storage;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=config.js.map

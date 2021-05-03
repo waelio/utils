@@ -1,10 +1,6 @@
-const { store } = require('./store')
-const { config, storage } = require('./config')
-const { note, Notify } = require('./note')
+import * as store from './store'
+import { config, storage } from './config'
+import { note, Notify } from './note'
+const Utils = { store, config, storage, note, Notify }
 
-exports.store = store
-exports.config = config
-exports.storage = storage
-exports.note = note
-exports.Notify = Notify
-exports.Utils = { store, config, storage, note, Notify }
+export { store, config, storage, note, Utils }

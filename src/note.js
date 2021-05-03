@@ -1,20 +1,20 @@
-const Vue = require('vue')
-const Quasar = require('quasar')
-const {
+import Vue from 'vue'
+import Quasar from 'quasar'
+import {
   Notify,
   Dialog,
   Dark,
   LoadingBar,
   Loading,
   QSpinnerGears,
-} = require('quasar')
-const {
+} from 'quasar'
+import {
   dialogDefaults,
   loadingBarDefaults,
   defaultStyles,
   loadingDefaults,
   notifyDefaults,
-} = require('./statics')
+} from './statics'
 
 Vue.use(Quasar, {
   config: {
@@ -69,5 +69,4 @@ note.debug = (title, err) => {
   }
 }
 
-exports.note = note
-exports.Notify = Notify
+export { note, Notify }

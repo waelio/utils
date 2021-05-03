@@ -79,7 +79,7 @@ export default [
     ],
   }, //Store
   {
-    input: 'main.js',
+    input: 'src/index.js',
     plugins: [nodePolyfills(), resolve(), json()],
     output: [
       {
@@ -97,5 +97,5 @@ export default [
         sourcemap: true,
       },
     ],
-  },
+  }, //utils
 ]
