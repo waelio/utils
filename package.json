@@ -2,7 +2,7 @@
   "name": "@waelio/utils",
   "version": "3.0.11",
   "description": "Javascript Utilities",
-  "main": "dist/config",
+  "main": "dist/utils",
   "files": [
     "dist/config/client.js",
     "dist/config/dev.js",
@@ -20,7 +20,11 @@
     "dist/store.ejs",
     "dist/store.ejs.map",
     "dist/store.js",
-    "dist/store.js.map"
+    "dist/store.js.map",
+    "dist/utils.js",
+    "dist/utils.js.map",
+    "dist/utils.ejs",
+    "dist/utils.ejs.map"
   ],
   "directories": {
     "config": "dist/config",
