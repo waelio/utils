@@ -64,6 +64,7 @@
     "the-answer": "^1.0.0"
   },
   "dependencies": {
+    "@waelio/utils": "^3.0.10",
     "quasar": "^1.15.10",
     "vue": "^2.6.12"
   }
