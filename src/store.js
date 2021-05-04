@@ -1,2 +1,4 @@
-import store2 from 'store2'
-export { store as store2 }
+var store2 = require('store2')
+
+export { store2 }
+export default store2

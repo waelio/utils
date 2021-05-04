@@ -1,6 +1,7 @@
-import { store } from './store'
+import store2 from './store'
 import path from 'path'
-const Storage = store.namespace('app')
+
+const Storage = store2.namespace('app')
 class Config {
   constructor() {
     const self = this

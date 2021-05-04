@@ -1,1 +1,1 @@
-{"version":3,"file":"store.js","sources":["../src/store.js"],"sourcesContent":["const store2 = require('store2')\r\nexports.store = store2\r\n"],"names":[],"mappings":";;;;;CAAA,MAAM,MAAM,GAAG,OAAO,CAAC,QAAQ,EAAC;CAChC,OAAO,CAAC,KAAK,GAAG;;;;;;"}
+{"version":3,"file":"store.js","sources":["../src/store.js"],"sourcesContent":["var store2 = require('store2')\r\n\r\nexport { store2 }\r\nexport default store2\r\n"],"names":[],"mappings":";;;;;;AAAG,KAAC,MAAM,GAAG,OAAO,CAAC,QAAQ;;;;;;;;;;;"}
