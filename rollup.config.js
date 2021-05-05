@@ -16,14 +16,14 @@ export default [
     ],
     output: [
       {
-        name: 'config',
+        name: 'Config',
         file: 'dist/config.ejs',
         format: 'esm',
         exports: 'named',
         sourcemap: true,
       },
       {
-        name: 'config',
+        name: 'Config',
         file: 'dist/config.js',
         format: 'umd',
         exports: 'named',
@@ -43,14 +43,14 @@ export default [
     ],
     output: [
       {
-        name: 'note',
+        name: 'Note',
         file: 'dist/note.ejs',
         format: 'esm',
         exports: 'named',
         sourcemap: true,
       },
       {
-        name: 'note',
+        name: 'Note',
         file: 'dist/note.js',
         format: 'umd',
         exports: 'named',
@@ -59,18 +59,38 @@ export default [
     ],
   }, //Note
   {
+    input: 'src/storage',
+    plugins: [nodePolyfills(), resolve(), json()],
+    output: [
+      {
+        name: 'Storage',
+        file: 'dist/storage.ejs',
+        format: 'esm',
+        exports: 'named',
+        sourcemap: true,
+      },
+      {
+        name: 'Storage',
+        file: 'dist/storage.js',
+        format: 'umd',
+        exports: 'named',
+        sourcemap: true,
+      },
+    ],
+  }, //Storage
+  {
     input: 'src/store',
     plugins: [nodePolyfills(), resolve(), json()],
     output: [
       {
-        name: 'store',
+        name: 'Store',
         file: 'dist/store.ejs',
         format: 'esm',
         exports: 'named',
         sourcemap: true,
       },
       {
-        name: 'store',
+        name: 'Store',
         file: 'dist/store.js',
         format: 'umd',
         exports: 'named',

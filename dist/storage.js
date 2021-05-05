@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Config = {}));
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Storage = {}));
 }(this, (function (exports) { 'use strict';
 
   var store2 = require('store2');
@@ -405,13 +405,12 @@
     }
   }
 
-  const config = new Config(),
-    storage = Storage;
+  new Config();
+    const storage = Storage;
 
-  exports.config = config;
   exports.storage = storage;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
-//# sourceMappingURL=config.js.map
+//# sourceMappingURL=storage.js.map

@@ -18,41 +18,198 @@ npm install @waelio/utils
 yarn add @waelio/utils
 ```
 
-### If you are using Quasar Cli, make sure to uncomment `// 'fontawesome-v5',` in `quasar.conf.js` under `extras[]` or you can add the cdn for font-awesome
+<ol>
+ <li> Quasar Cli, make sure to uncomment: `quasar.conf.js` under `extras[]`
+
+```js
+// 'fontawesome-v5',`
+```
+
+#### or you can add the cdn for font-awesome in `src/index.template.html`
+
 ```html
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
-``` 
-in `src/index.template.html`
+<!-- Font-Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" crossorigin="anonymous" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" />
+```
+
+</li>
+
 <hr />
 
-### If you are using Vue Cli, add the following in `public/index.html`
+<li>Vue Cli, add the following "Material Icons, Font-Awesome 5 and Quasar CSS Classes" to public/index.html
 
 ```html
+<!-- Material Icons -->
 <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css" />
+<!-- Quasar CSS Classes "min" -->
 <link href="https://cdn.jsdelivr.net/npm/quasar@1.15.13/dist/quasar.min.css" rel="stylesheet" type="text/css" />
-<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css" />
-<link href="https://cdn.jsdelivr.net/npm/quasar@1.15.13/dist/quasar.min.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+<!-- Font-Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" crossorigin="anonymous" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" />
 ```
 
-### In browser:
+<hr>
+<li>UMD "Standalone":
 
 ```html
+<!-- Material Icons -->
 <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css" />
+<!-- Quasar CSS Classes "min" -->
 <link href="https://cdn.jsdelivr.net/npm/quasar@1.15.13/dist/quasar.min.css" rel="stylesheet" type="text/css" />
-<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css" />
-<link href="https://cdn.jsdelivr.net/npm/quasar@1.15.13/dist/quasar.min.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
-<script src="https://cdn.jsdelivr.net/npm/@waelio/utils@3.0.13/dist/utils.js"></script>
+<!-- Font-Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" crossorigin="anonymous" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" />
+
+<!-- Start: Only in UMD otherwise use the NPM or Yarn -->
+<script src="https://cdn.jsdelivr.net/npm/@waelio/utils@latest/dist/utils.js"></script>
+<!-- End: Only in UMD -->
 ```
+
+</li>
+</ol>
 
 #
 
-## Not fully tested yet!
+### Not finished testing yet!
 
-Documentation & examples coming soon. Needs more testing 😃
+Adding Documentation. Tests & examples regularly.
+
+Here is a quick use in a `Quasar` Project, can be used in a `Vue` or `Nuxt` just as easily:
+
+```javascript
+// src/bootstrap.js
+
+import { Utils } from '@waelio/utils';
+
+const { config, note, storage } = Utils;
+config.set('dev:api', 'http://localhost:3000');
+console.log(
+  '%cMyProject%cline:10%ccconfig',
+  'color:#fff;background:#ee6f57;padding:3px;border-radius:2px',
+  'color:#fff;background:#1f3c88;padding:3px;border-radius:2px',
+  'color:#fff;background:rgb(3, 101, 100);padding:3px;border-radius:2px',
+  config
+);
+// "async" is optional;
+// more info on params: https://quasar.dev/quasar-cli/boot-files
+export default async ({ app, store, Vue }) => {
+  app.utils = Utils;
+
+  Vue.prototype.$utils = Utils;
+  Vue.prototype.$config = config;
+  Vue.prototype.$note = note;
+  Vue.prototype.$storage = storage;
+
+  store.$utils = Utils;
+  store.$config = config;
+  store.$note = note;
+  store.$storage = storage;
+};
+
+export { config, note, storage };
+```
+
+Then you can use in another `BootFile` such as `axios`
+
+```javascript
+// src/boot/axios.js
+
+import Vue from 'vue';
+import axios from 'axios';
+import { config, note } from 'boot/bootstrap';
+import { reParseString } from 'waelio-utils';
+
+let instance, HTTP;
+Vue.mixin({
+  beforeCreate() {
+    const options = this.$options;
+    if (options.axios) {
+      this.$axios = options.axios;
+    } else if (options.parent) {
+      this.$axios = options.parent.$axios;
+    }
+  }
+});
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+const baseURL = config.get('api');
+HTTP = axios.create({
+  baseURL: baseURL
+});
+HTTP.interceptors.request.use(
+  (conf) => {
+    const token = config.get('accessToken');
+    if (token) {
+      conf.headers.Authorization = `bearer ${token}`;
+    }
+    return conf;
+  },
+  (error) => {
+    if (error) {
+      note.error(error, { position: 'top-right' });
+      return Promise.reject(error);
+    }
+  }
+);
+HTTP.interceptors.response.use(
+  (response) => {
+    const data = _.get(response, 'data');
+    response = data ? reParseString(data) : response;
+    return response;
+  },
+  (error) => {
+    if (error) {
+      note.error(error || error.message, { position: 'bottom' });
+      return Promise.reject(error);
+    }
+  }
+);
+
+Vue.prototype.$HTTP = HTTP;
+function updateAxios(params) {
+  HTTP.interceptors.request.use(
+    (conf) => {
+      const token = params;
+      if (token) {
+        conf.headers.Authorization = `bearer ${token}`;
+      }
+      return conf;
+    },
+    (error) => {
+      if (error) {
+        note.error(error, { position: 'top-right' });
+      }
+    }
+  );
+}
+export default function({ app, store, ssrContext }) {
+  app.HTTP = HTTP;
+  store.$HTTP = HTTP;
+
+  return HTTP;
+}
+
+export { HTTP, Run, updateAxios, axios };
+```
+
+# Here is how I use it `get all at once`:
+```js
+import { Utils } from '@waelio/utils'
+const { config, note, storage } = Utils
+config.set('dev:api', 'http://localhost:3000')
+
+// Remember in the axios.js Boot File?
+const baseURL = config.get("api"); // 'http://localhost:3000'
+
+```
+
 
 # Config
+
+```javascript
+import { config } from '@waelio/utils/dist/config';
+
+// login -> accessToken -> Save it
+config.set("Token", accessToken)
+
+```
 
 # Store
 

@@ -47047,8 +47047,19 @@
     }
   };
 
-  const Utils = { store: store2, config: config$3, storage, note, Notify };
+  const Utils = {
+    Store: store2,
+    Config: config$3,
+    Storage: storage,
+    Note: note,
+    store: store2,
+    config: config$3,
+    storage,
+    note,
+    Notify,
+  };
 
+  exports.Notify = Notify;
   exports.Utils = Utils;
   exports.config = config$3;
   exports.note = note;

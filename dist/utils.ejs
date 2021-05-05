@@ -47041,7 +47041,17 @@ note.debug = (title, err) => {
   }
 };
 
-const Utils = { store: store2, config: config$3, storage, note, Notify };
+const Utils = {
+  Store: store2,
+  Config: config$3,
+  Storage: storage,
+  Note: note,
+  store: store2,
+  config: config$3,
+  storage,
+  note,
+  Notify,
+};
 
-export { Utils, config$3 as config, note, storage, store2 as store };
+export { Notify, Utils, config$3 as config, note, storage, store2 as store };
 //# sourceMappingURL=utils.ejs.map
