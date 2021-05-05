@@ -64,12 +64,12 @@
     "rollup": "^2.43.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-polyfills": "^0.2.1",
-    "store2": "^2.12.0",
     "the-answer": "^1.0.0"
   },
   "dependencies": {
     "@waelio/utils": "^3.0.10",
     "quasar": "^1.15.10",
+    "store2": "^2.12.0",
     "vue": "^2.6.12"
   }
 }
