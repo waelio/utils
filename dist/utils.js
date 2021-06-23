@@ -971,7 +971,7 @@
   /**
    * Capitalize a string.
    */
-  var capitalize$1 = cached(function (str) {
+  var capitalize = cached(function (str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
   });
 
@@ -2369,7 +2369,7 @@
     if (hasOwn$1(assets, id)) { return assets[id] }
     var camelizedId = camelize(id);
     if (hasOwn$1(assets, camelizedId)) { return assets[camelizedId] }
-    var PascalCaseId = capitalize$1(camelizedId);
+    var PascalCaseId = capitalize(camelizedId);
     if (hasOwn$1(assets, PascalCaseId)) { return assets[PascalCaseId] }
     // fallback to prototype chain
     var res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
@@ -2571,7 +2571,7 @@
 
   function getInvalidTypeMessage (name, value, expectedTypes) {
     var message = "Invalid prop: type check failed for prop \"" + name + "\"." +
-      " Expected " + (expectedTypes.map(capitalize$1).join(', '));
+      " Expected " + (expectedTypes.map(capitalize).join(', '));
     var expectedType = expectedTypes[0];
     var receivedType = toRawType(value);
     // check if we need to specify expected value
@@ -8046,7 +8046,7 @@
     }
   }
 
-  var style$1 = {
+  var style = {
     create: updateStyle,
     update: updateStyle
   };
@@ -8625,7 +8625,7 @@
     klass,
     events,
     domProps,
-    style$1,
+    style,
     transition
   ];
 
@@ -9638,14 +9638,6 @@
     return e.button === 0
   }
 
-  function middleClick (e) {
-    return e.button === 1
-  }
-
-  function rightClick (e) {
-    return e.button === 2
-  }
-
   function position (e) {
     if (e.touches && e.touches[0]) {
       e = e.touches[0];
@@ -9685,27 +9677,6 @@
 
       el = el.parentElement;
     }
-  }
-
-  // Reasonable defaults
-  const
-    LINE_HEIGHT = 40,
-    PAGE_HEIGHT = 800;
-
-  function getMouseWheelDistance (e) {
-    let x = e.deltaX, y = e.deltaY;
-
-    if ((x || y) && e.deltaMode) {
-      const multiplier = e.deltaMode === 1 ? LINE_HEIGHT : PAGE_HEIGHT;
-      x *= multiplier;
-      y *= multiplier;
-    }
-
-    if (e.shiftKey && !x) {
-      [y, x] = [x, y];
-    }
-
-    return { x, y }
   }
 
   function stop (e) {
@@ -9786,25 +9757,6 @@
       ctx[name] = void 0;
     }
   }
-
-  /*
-   * also update /types/utils/event.d.ts
-   */
-
-  var event = {
-    listenOpts,
-    leftClick,
-    middleClick,
-    rightClick,
-    position,
-    getEventPath,
-    getMouseWheelDistance,
-    stop,
-    prevent,
-    stopAndPrevent,
-    preventDraggable,
-    create
-  };
 
   function debounce (fn, wait = 250, immediate) {
     let timeout;
@@ -9995,7 +9947,7 @@
     }
   };
 
-  const Dark$1 = {
+  const Dark = {
     isActive: false,
     mode: false,
 
@@ -10078,7 +10030,7 @@
     },
 
     toggle () {
-      Dark$1.set(Dark$1.isActive === false);
+      Dark.set(Dark.isActive === false);
     },
 
     __media: void 0
@@ -10543,29 +10495,6 @@
     return rgb
   }
 
-  /* works as darken if percent < 0 */
-  function lighten (color, percent) {
-    if (typeof color !== 'string') {
-      throw new TypeError('Expected a string as color')
-    }
-    if (typeof percent !== 'number') {
-      throw new TypeError('Expected a numeric percent')
-    }
-
-    const rgb = textToRgb(color),
-      t = percent < 0 ? 0 : 255,
-      p = Math.abs(percent) / 100,
-      R = rgb.r,
-      G = rgb.g,
-      B = rgb.b;
-
-    return '#' + (
-      0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 +
-      (Math.round((t - G) * p) + G) * 0x100 +
-      (Math.round((t - B) * p) + B)
-    ).toString(16).slice(1)
-  }
-
   function luminosity (color) {
     if (typeof color !== 'string' && (!color || color.r === void 0)) {
       throw new TypeError('Expected a string or a {r, g, b} object as color')
@@ -10580,66 +10509,6 @@
       G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4),
       B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
     return 0.2126 * R + 0.7152 * G + 0.0722 * B
-  }
-
-  function brightness (color) {
-    if (typeof color !== 'string' && (!color || color.r === void 0)) {
-      throw new TypeError('Expected a string or a {r, g, b} object as color')
-    }
-
-    const rgb = typeof color === 'string'
-      ? textToRgb(color)
-      : color;
-
-    return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000
-  }
-
-  function blend (fgColor, bgColor) {
-    if (typeof fgColor !== 'string' && (!fgColor || fgColor.r === void 0)) {
-      throw new TypeError('Expected a string or a {r, g, b[, a]} object as fgColor')
-    }
-
-    if (typeof bgColor !== 'string' && (!bgColor || bgColor.r === void 0)) {
-      throw new TypeError('Expected a string or a {r, g, b[, a]} object as bgColor')
-    }
-
-    const
-      rgb1 = typeof fgColor === 'string' ? textToRgb(fgColor) : fgColor,
-      r1 = rgb1.r / 255,
-      g1 = rgb1.g / 255,
-      b1 = rgb1.b / 255,
-      a1 = rgb1.a !== void 0 ? rgb1.a / 100 : 1,
-      rgb2 = typeof bgColor === 'string' ? textToRgb(bgColor) : bgColor,
-      r2 = rgb2.r / 255,
-      g2 = rgb2.g / 255,
-      b2 = rgb2.b / 255,
-      a2 = rgb2.a !== void 0 ? rgb2.a / 100 : 1,
-      a = a1 + a2 * (1 - a1),
-      r = Math.round(((r1 * a1 + r2 * a2 * (1 - a1)) / a) * 255),
-      g = Math.round(((g1 * a1 + g2 * a2 * (1 - a1)) / a) * 255),
-      b = Math.round(((b1 * a1 + b2 * a2 * (1 - a1)) / a) * 255);
-
-    const ret = { r, g, b, a: Math.round(a * 100) };
-    return typeof fgColor === 'string'
-      ? rgbToHex(ret)
-      : ret
-  }
-
-  function changeAlpha (color, offset) {
-    if (typeof color !== 'string') {
-      throw new TypeError('Expected a string as color')
-    }
-
-    if (offset === void 0 || offset < -1 || offset > 1) {
-      throw new TypeError('Expected offset to be between -1 and 1')
-    }
-
-    const { r, g, b, a } = textToRgb(color);
-    const alpha = a !== void 0 ? a / 100 : 0;
-
-    return rgbToHex({
-      r, g, b, a: Math.round(Math.min(1, Math.max(0, alpha + offset)) * 100)
-    })
   }
 
   function setBrand (color, value, element = document.body) {
@@ -10666,39 +10535,6 @@
 
     return getComputedStyle(element).getPropertyValue(`--q-color-${color}`).trim() || null
   }
-
-  function getPaletteColor (colorName) {
-    if (typeof colorName !== 'string') {
-      throw new TypeError('Expected a string as color')
-    }
-
-    const el = document.createElement('div');
-
-    el.className = `text-${colorName} invisible fixed no-pointer-events`;
-    document.body.appendChild(el);
-
-    const result = getComputedStyle(el).getPropertyValue('color');
-
-    el.remove();
-
-    return rgbToHex(textToRgb(result))
-  }
-
-  var colors = {
-    rgbToHex,
-    hexToRgb,
-    hsvToRgb,
-    rgbToHsv,
-    textToRgb,
-    lighten,
-    luminosity,
-    brightness,
-    blend,
-    changeAlpha,
-    setBrand,
-    getBrand,
-    getPaletteColor
-  };
 
   let lastKeyCompositionStatus = false;
 
@@ -11007,7 +10843,7 @@
   };
 
   const autoInstalled = [
-    Platform, Screen, Dark$1
+    Platform, Screen, Dark
   ];
 
   const queues = {
@@ -11029,7 +10865,7 @@
     // required plugins
     Platform.install($q, queues);
     Body.install(queues, cfg);
-    Dark$1.install($q, queues, cfg);
+    Dark.install($q, queues, cfg);
     Screen.install($q, queues, cfg);
     History.install(cfg);
     lang.install($q, queues, opts.lang);
@@ -11127,10 +10963,6 @@
     return `${bytes.toFixed(1)}${units[u]}`
   }
 
-  function capitalize (str) {
-    return str.charAt(0).toUpperCase() + str.slice(1)
-  }
-
   function between (v, min, max) {
     return max <= min
       ? min
@@ -11162,14 +10994,6 @@
       ? val
       : new Array(length - val.length + 1).join(char) + val
   }
-
-  var format = {
-    humanStorageSize,
-    capitalize,
-    between,
-    normalizeToInterval,
-    pad
-  };
 
   function cache (vm, key, obj) {
     if (isSSR === true) return obj
@@ -12198,20 +12022,10 @@
     return { top, left }
   }
 
-  function style (el, property) {
-    return window.getComputedStyle(el).getPropertyValue(property)
-  }
-
   function height (el) {
     return el === window
       ? window.innerHeight
       : el.getBoundingClientRect().height
-  }
-
-  function width$1 (el) {
-    return el === window
-      ? window.innerWidth
-      : el.getBoundingClientRect().width
   }
 
   function css (element, css) {
@@ -12220,22 +12034,6 @@
     Object.keys(css).forEach(prop => {
       style[prop] = css[prop];
     });
-  }
-
-  function cssBatch (elements, style) {
-    elements.forEach(el => css(el, style));
-  }
-
-  function ready (fn) {
-    if (typeof fn !== 'function') {
-      return
-    }
-
-    if (document.readyState !== 'loading') {
-      return fn()
-    }
-
-    document.addEventListener('DOMContentLoaded', fn, false);
   }
 
   // internal
@@ -12264,16 +12062,6 @@
       )
       : document.body
   }
-
-  var dom = {
-    offset,
-    style,
-    height,
-    width: width$1,
-    css,
-    cssBatch,
-    ready
-  };
 
   function throttle (fn, limit = 250) {
     let wait = false, result;
@@ -13851,10 +13639,6 @@
     return (el === window ? document.body : el).scrollHeight
   }
 
-  function getScrollWidth (el) {
-    return (el === window ? document.body : el).scrollWidth
-  }
-
   function getScrollPosition (scrollTarget) {
     if (scrollTarget === window) {
       return window.pageYOffset || window.scrollY || document.body.scrollTop || 0
@@ -14006,25 +13790,6 @@
         )
       )
   }
-
-  var scroll = {
-    getScrollTarget,
-
-    getScrollHeight,
-    getScrollWidth,
-
-    getScrollPosition,
-    getHorizontalScrollPosition,
-
-    animScrollTo,
-    animHorizontalScrollTo,
-
-    setScrollPosition,
-    setHorizontalScrollPosition,
-
-    getScrollbarWidth,
-    hasScrollbar
-  };
 
   const handlers = [];
   let escDown = false;
@@ -17082,10 +16847,6 @@
     hexOrRgbColor: v => hex.test(v) || rgb.test(v),
     hexaOrRgbaColor: v => hexa.test(v) || rgba.test(v),
     anyColor: v => hexOrHexa.test(v) || rgb.test(v) || rgba.test(v)
-  };
-
-  var patterns = {
-    testPattern
   };
 
   function getChanges (evt, ctx, isFinal) {
@@ -20244,26 +20005,6 @@
     return res
   }
 
-  function extractDate (str, mask, dateLocale) {
-    const d = __splitDate(str, mask, dateLocale);
-
-    const date = new Date(
-      d.year,
-      d.month === null ? null : d.month - 1,
-      d.day,
-      d.hour,
-      d.minute,
-      d.second,
-      d.millisecond
-    );
-
-    const tzOffset = date.getTimezoneOffset();
-
-    return d.timezoneOffset === null || d.timezoneOffset === tzOffset
-      ? date
-      : getChange(date, { minutes: d.timezoneOffset - tzOffset }, true)
-  }
-
   function __splitDate (str, mask, dateLocale, calendar, defaultModel) {
     const date = {
       year: null,
@@ -20412,48 +20153,6 @@
     return sign + pad(hours) + delimeter + pad(minutes)
   }
 
-  function setMonth (date, newMonth /* 1-based */) {
-    const
-      test = new Date(date.getFullYear(), newMonth, 0, 0, 0, 0, 0),
-      days = test.getDate();
-
-    date.setMonth(newMonth - 1, Math.min(days, date.getDate()));
-  }
-
-  function getChange (date, mod, add) {
-    const
-      t = new Date(date),
-      sign = (add ? 1 : -1);
-
-    Object.keys(mod).forEach(key => {
-      if (key === 'month') {
-        setMonth(t, t.getMonth() + 1 + sign * mod.month);
-        return
-      }
-
-      const op = key === 'year'
-        ? 'FullYear'
-        : capitalize(key === 'days' ? 'date' : key);
-      t[`set${op}`](t[`get${op}`]() + sign * mod[key]);
-    });
-    return t
-  }
-
-  function isValid (date) {
-    return typeof date === 'number'
-      ? true
-      : isNaN(Date.parse(date)) === false
-  }
-
-  function buildDate (mod, utc) {
-    return adjustDate(new Date(), mod, utc)
-  }
-
-  function getDayOfWeek (date) {
-    const dow = new Date(date).getDay();
-    return dow === 0 ? 7 : dow
-  }
-
   function getWeekOfYear (date) {
     // Remove time components of date
     const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -20476,52 +20175,6 @@
     return 1 + Math.floor(weekDiff)
   }
 
-  function getDayIdentifier (date) {
-    return date.getFullYear() * 10000 + date.getMonth() * 100 + date.getDate()
-  }
-
-  function getDateIdentifier (date, onlyDate /* = false */) {
-    const d = new Date(date);
-    return onlyDate === true ? getDayIdentifier(d) : d.getTime()
-  }
-
-  function isBetweenDates (date, from, to, opts = {}) {
-    const
-      d1 = getDateIdentifier(from, opts.onlyDate),
-      d2 = getDateIdentifier(to, opts.onlyDate),
-      cur = getDateIdentifier(date, opts.onlyDate);
-
-    return (cur > d1 || (opts.inclusiveFrom === true && cur === d1)) &&
-      (cur < d2 || (opts.inclusiveTo === true && cur === d2))
-  }
-
-  function addToDate (date, mod) {
-    return getChange(date, mod, true)
-  }
-  function subtractFromDate (date, mod) {
-    return getChange(date, mod, false)
-  }
-
-  function adjustDate (date, mod, utc) {
-    const
-      t = new Date(date),
-      prefix = `set${utc === true ? 'UTC' : ''}`;
-
-    Object.keys(mod).forEach(key => {
-      if (key === 'month') {
-        setMonth(t, mod.month);
-        return
-      }
-
-      const op = key === 'year'
-        ? 'FullYear'
-        : key.charAt(0).toUpperCase() + key.slice(1);
-      t[`${prefix}${op}`](mod[key]);
-    });
-
-    return t
-  }
-
   function startOfDate (date, unit, utc) {
     const
       t = new Date(date),
@@ -20541,44 +20194,6 @@
       case 'second':
         t[`${prefix}Milliseconds`](0);
     }
-    return t
-  }
-
-  function endOfDate (date, unit, utc) {
-    const
-      t = new Date(date),
-      prefix = `set${utc === true ? 'UTC' : ''}`;
-
-    switch (unit) {
-      case 'year':
-        t[`${prefix}Month`](11);
-      case 'month':
-        t[`${prefix}Date`](daysInMonth(t));
-      case 'day':
-        t[`${prefix}Hours`](23);
-      case 'hour':
-        t[`${prefix}Minutes`](59);
-      case 'minute':
-        t[`${prefix}Seconds`](59);
-      case 'second':
-        t[`${prefix}Milliseconds`](999);
-    }
-    return t
-  }
-
-  function getMaxDate (date /* , ...args */) {
-    let t = new Date(date);
-    Array.prototype.slice.call(arguments, 1).forEach(d => {
-      t = Math.max(t, new Date(d));
-    });
-    return t
-  }
-
-  function getMinDate (date /*, ...args */) {
-    let t = new Date(date);
-    Array.prototype.slice.call(arguments, 1).forEach(d => {
-      t = Math.min(t, new Date(d));
-    });
     return t
   }
 
@@ -20617,78 +20232,6 @@
 
   function getDayOfYear (date) {
     return getDateDiff(date, startOfDate(date, 'year'), 'days') + 1
-  }
-
-  function inferDateFormat (date) {
-    return isDate(date) === true
-      ? 'date'
-      : (typeof date === 'number' ? 'number' : 'string')
-  }
-
-  function getDateBetween (date, min, max) {
-    const t = new Date(date);
-
-    if (min) {
-      const low = new Date(min);
-      if (t < low) {
-        return low
-      }
-    }
-
-    if (max) {
-      const high = new Date(max);
-      if (t > high) {
-        return high
-      }
-    }
-
-    return t
-  }
-
-  function isSameDate (date, date2, unit) {
-    const
-      t = new Date(date),
-      d = new Date(date2);
-
-    if (unit === void 0) {
-      return t.getTime() === d.getTime()
-    }
-
-    switch (unit) {
-      case 'second':
-        if (t.getSeconds() !== d.getSeconds()) {
-          return false
-        }
-      case 'minute': // intentional fall-through
-        if (t.getMinutes() !== d.getMinutes()) {
-          return false
-        }
-      case 'hour': // intentional fall-through
-        if (t.getHours() !== d.getHours()) {
-          return false
-        }
-      case 'day': // intentional fall-through
-        if (t.getDate() !== d.getDate()) {
-          return false
-        }
-      case 'month': // intentional fall-through
-        if (t.getMonth() !== d.getMonth()) {
-          return false
-        }
-      case 'year': // intentional fall-through
-        if (t.getFullYear() !== d.getFullYear()) {
-          return false
-        }
-        break
-      default:
-        throw new Error(`date isSameDate unknown unit ${unit}`)
-    }
-
-    return true
-  }
-
-  function daysInMonth (date) {
-    return (new Date(date.getFullYear(), date.getMonth() + 1, 0)).getDate()
   }
 
   function getOrdinal (n) {
@@ -20947,36 +20490,6 @@
         : (text === void 0 ? match : text.split('\\]').join(']'))
     )
   }
-
-  function clone$1 (date) {
-    return isDate(date) === true
-      ? new Date(date.getTime())
-      : date
-  }
-
-  var date = {
-    isValid,
-    extractDate,
-    buildDate,
-    getDayOfWeek,
-    getWeekOfYear,
-    isBetweenDates,
-    addToDate,
-    subtractFromDate,
-    adjustDate,
-    startOfDate,
-    endOfDate,
-    getMaxDate,
-    getMinDate,
-    getDateDiff,
-    getDayOfYear,
-    inferDateFormat,
-    getDateBetween,
-    isSameDate,
-    daysInMonth,
-    formatDate,
-    clone: clone$1
-  };
 
   const yearsInterval = 20;
   const views = [ 'Calendar', 'Years', 'Months' ];
@@ -37048,7 +36561,7 @@
     }
   });
 
-  var QSpinnerGears$1 = Vue.extend({
+  var QSpinnerGears = Vue.extend({
     name: 'QSpinnerGears',
 
     mixins: [mixin],
@@ -43611,7 +43124,7 @@
     QSpinnerCube: QSpinnerCube,
     QSpinnerDots: QSpinnerDots,
     QSpinnerFacebook: QSpinnerFacebook,
-    QSpinnerGears: QSpinnerGears$1,
+    QSpinnerGears: QSpinnerGears,
     QSpinnerGrid: QSpinnerGrid,
     QSpinnerHearts: QSpinnerHearts,
     QSpinnerHourglass: QSpinnerHourglass,
@@ -47832,7 +47345,7 @@
     AppVisibility: AppVisibility,
     BottomSheet: BottomSheet,
     Cookies: Cookies,
-    Dark: Dark$1,
+    Dark: Dark,
     Dialog: Dialog,
     LoadingBar: LoadingBar,
     Loading: Loading,
@@ -47843,134 +47356,6 @@
     LocalStorage: LocalStorage,
     SessionStorage: SessionStorage
   });
-
-  function fallback (text) {
-    const area = document.createElement('textarea');
-    area.value = text;
-    area.contentEditable = true;
-    area.style.position = 'fixed'; // avoid scrolling to bottom
-
-    document.body.appendChild(area);
-    area.focus();
-    area.select();
-
-    const res = document.execCommand('copy');
-
-    area.remove();
-    return res
-  }
-
-  function copyToClipboard (text) {
-    return navigator.clipboard !== void 0
-      ? navigator.clipboard.writeText(text)
-      : new Promise((resolve, reject) => {
-        const res = fallback(text);
-        if (res) {
-          resolve(true);
-        }
-        else {
-          reject(res);
-        }
-      })
-  }
-
-  function clean (link) {
-    // allow time for iOS
-    setTimeout(() => {
-      window.URL.revokeObjectURL(link.href);
-    }, 10000);
-    link.remove();
-  }
-
-  function exportFile (fileName, rawData, mimeType) {
-    const blob = new Blob([ rawData ], { type: mimeType || 'text/plain' });
-
-    // IE11 has its own stuff...
-    if (window.navigator.msSaveOrOpenBlob) {
-      return window.navigator.msSaveOrOpenBlob(blob, fileName)
-    }
-
-    const link = document.createElement('a');
-
-    link.download = fileName;
-    link.href = window.URL.createObjectURL(blob);
-
-    link.classList.add('hidden');
-    link.style.position = 'fixed'; // avoid scrolling to bottom
-    document.body.appendChild(link);
-
-    try {
-      link.click();
-      clean(link);
-      return true
-    }
-    catch (err) {
-      clean(link);
-      return err
-    }
-  }
-
-  function parseFeatures (winFeatures) {
-    const cfg = Object.assign({ noopener: true }, winFeatures);
-    const feat = [];
-    Object.keys(cfg).forEach(key => {
-      if (cfg[key] === true) {
-        feat.push(key);
-      }
-    });
-    return feat.join(',')
-  }
-
-  function openWindow (url, reject, windowFeatures) {
-    let open = window.open;
-
-    if (Platform.is.cordova === true) {
-      if (cordova !== void 0 && cordova.InAppBrowser !== void 0 && cordova.InAppBrowser.open !== void 0) {
-        open = cordova.InAppBrowser.open;
-      }
-      else if (navigator !== void 0 && navigator.app !== void 0) {
-        return navigator.app.loadUrl(url, {
-          openExternal: true
-        })
-      }
-    }
-    else if (Vue.prototype.$q.electron !== void 0) {
-      return Vue.prototype.$q.electron.shell.openExternal(url)
-    }
-
-    const win = open(url, '_blank', parseFeatures(windowFeatures));
-
-    if (win) {
-      Platform.is.desktop && win.focus();
-      return win
-    }
-    else {
-      reject && reject();
-    }
-  }
-
-  var openUrl = (url, reject, windowFeatures) => {
-    if (
-      Platform.is.ios === true &&
-      window.SafariViewController !== void 0
-    ) {
-      window.SafariViewController.isAvailable(available => {
-        if (available) {
-          window.SafariViewController.show(
-            { url },
-            noop,
-            reject
-          );
-        }
-        else {
-          openWindow(url, reject, windowFeatures);
-        }
-      });
-      return
-    }
-
-    return openWindow(url, reject, windowFeatures)
-  };
 
   var Quasar = {
     ...VuePlugin,
@@ -47984,180 +47369,6 @@
     }
   };
 
-  var index_esm = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    'default': Quasar,
-    QAjaxBar: QAjaxBar,
-    QAvatar: QAvatar,
-    QBadge: QBadge,
-    QBanner: QBanner,
-    QBar: QBar,
-    QBreadcrumbs: QBreadcrumbs,
-    QBreadcrumbsEl: QBreadcrumbsEl,
-    QBtn: QBtn,
-    QBtnDropdown: QBtnDropdown,
-    QBtnGroup: QBtnGroup,
-    QBtnToggle: QBtnToggle,
-    QCard: QCard,
-    QCardSection: QCardSection,
-    QCardActions: QCardActions,
-    QCarousel: QCarousel,
-    QCarouselSlide: QCarouselSlide,
-    QCarouselControl: QCarouselControl,
-    QChatMessage: QChatMessage,
-    QCheckbox: QCheckbox,
-    QChip: QChip,
-    QCircularProgress: QCircularProgress,
-    QColor: QColor,
-    QDate: QDate,
-    QDialog: QDialog,
-    QDrawer: QDrawer,
-    QEditor: QEditor,
-    QExpansionItem: QExpansionItem,
-    QFab: QFab,
-    QFabAction: QFabAction,
-    QField: QField,
-    QFile: QFile,
-    QFooter: QFooter,
-    QForm: QForm,
-    QHeader: QHeader,
-    QIcon: QIcon,
-    QImg: QImg,
-    QInfiniteScroll: QInfiniteScroll,
-    QInnerLoading: QInnerLoading,
-    QInput: QInput,
-    QIntersection: QIntersection,
-    QList: QList,
-    QItem: QItem,
-    QItemSection: QItemSection,
-    QItemLabel: QItemLabel,
-    QKnob: QKnob,
-    QLayout: QLayout,
-    QMarkupTable: QMarkupTable,
-    QMenu: QMenu,
-    QNoSsr: QNoSsr,
-    QOptionGroup: QOptionGroup,
-    QPage: QPage,
-    QPageContainer: QPageContainer,
-    QPageScroller: QPageScroller,
-    QPageSticky: QPageSticky,
-    QPagination: QPagination,
-    QParallax: QParallax,
-    QPopupEdit: QPopupEdit,
-    QPopupProxy: QPopupProxy,
-    QLinearProgress: QLinearProgress,
-    QPullToRefresh: QPullToRefresh,
-    QRadio: QRadio,
-    QRange: QRange,
-    QRating: QRating,
-    QResizeObserver: QResizeObserver,
-    QResponsive: QResponsive,
-    QScrollArea: QScrollArea,
-    QScrollObserver: QScrollObserver,
-    QSelect: QSelect,
-    QSeparator: QSeparator,
-    QSkeleton: QSkeleton,
-    QSlideItem: QSlideItem,
-    QSlideTransition: QSlideTransition,
-    QSlider: QSlider,
-    QSpace: QSpace,
-    QSpinner: QSpinner,
-    QSpinnerAudio: QSpinnerAudio,
-    QSpinnerBall: QSpinnerBall,
-    QSpinnerBars: QSpinnerBars,
-    QSpinnerBox: QSpinnerBox,
-    QSpinnerClock: QSpinnerClock,
-    QSpinnerComment: QSpinnerComment,
-    QSpinnerCube: QSpinnerCube,
-    QSpinnerDots: QSpinnerDots,
-    QSpinnerFacebook: QSpinnerFacebook,
-    QSpinnerGears: QSpinnerGears$1,
-    QSpinnerGrid: QSpinnerGrid,
-    QSpinnerHearts: QSpinnerHearts,
-    QSpinnerHourglass: QSpinnerHourglass,
-    QSpinnerInfinity: QSpinnerInfinity,
-    QSpinnerIos: QSpinnerIos,
-    QSpinnerOrbit: QSpinnerOrbit,
-    QSpinnerOval: QSpinnerOval,
-    QSpinnerPie: QSpinnerPie,
-    QSpinnerPuff: QSpinnerPuff,
-    QSpinnerRadio: QSpinnerRadio,
-    QSpinnerRings: QSpinnerRings,
-    QSpinnerTail: QSpinnerTail,
-    QSplitter: QSplitter,
-    QStep: QStep,
-    QStepper: QStepper,
-    QStepperNavigation: QStepperNavigation,
-    QTabPanels: QTabPanels,
-    QTabPanel: QTabPanel,
-    QTable: QTable,
-    QTh: QTh,
-    QTr: QTr,
-    QTd: QTd,
-    QTabs: QTabs,
-    QTab: QTab,
-    QRouteTab: QRouteTab,
-    QTime: QTime,
-    QTimeline: QTimeline,
-    QTimelineEntry: QTimelineEntry,
-    QToggle: QToggle,
-    QToolbar: QToolbar,
-    QToolbarTitle: QToolbarTitle,
-    QTooltip: QTooltip,
-    QTree: QTree,
-    QUploader: QUploader,
-    QUploaderBase: QUploaderBase,
-    QUploaderAddTrigger: QUploaderAddTrigger,
-    QVideo: QVideo,
-    QVirtualScroll: QVirtualScroll,
-    ClosePopup: ClosePopup,
-    GoBack: GoBack,
-    Intersection: Intersection,
-    Morph: Morph,
-    Mutation: Mutation,
-    Ripple: Ripple,
-    ScrollFire: ScrollFire,
-    Scroll: Scroll,
-    TouchHold: TouchHold,
-    TouchPan: TouchPan,
-    TouchRepeat: TouchRepeat,
-    TouchSwipe: TouchSwipe,
-    AddressbarColor: AddressbarColor,
-    AppFullscreen: AppFullscreen,
-    AppVisibility: AppVisibility,
-    BottomSheet: BottomSheet,
-    Cookies: Cookies,
-    Dark: Dark$1,
-    Dialog: Dialog,
-    LoadingBar: LoadingBar,
-    Loading: Loading,
-    Meta: Meta,
-    Notify: Notify,
-    Platform: Platform,
-    Screen: Screen,
-    LocalStorage: LocalStorage,
-    SessionStorage: SessionStorage,
-    clone: clone,
-    colors: colors,
-    copyToClipboard: copyToClipboard,
-    date: date,
-    debounce: debounce,
-    dom: dom,
-    event: event,
-    exportFile: exportFile,
-    extend: extend,
-    format: format,
-    frameDebounce: frameDebounce,
-    noop: noop,
-    openURL: openUrl,
-    morph: morph,
-    patterns: patterns,
-    scroll: scroll,
-    throttle: throttle,
-    uid: uid$2
-  });
-
-  const { Dark, QSpinnerGears } = Promise.resolve().then(function () { return index_esm; });
   const color = Dark.isActive ? 'accent' : 'primary';
   ({
       title: 'Loading ...',
@@ -48165,41 +47376,41 @@
       message: '0%',
       progress: {
         spinner: QSpinnerGears,
-        color,
+        color
       },
       persistent: false, // we want the user to not be able to close it
-      ok: false,
+      ok: false
     });
     const notifyDefaults = {
       timeout: 10000,
-      position: 'top',
+      position: 'top'
     },
     loadingBarDefaults = {
       color: 'amber-7',
       size: '10px',
-      position: 'top',
+      position: 'top'
     },
     defaultStyles = {
       info: {
         icon: 'fa fa-check',
         color: 'info',
-        type: 'info',
+        type: 'info'
       },
       success: {
         icon: 'fa fa-check',
         color: 'positive',
-        type: 'positive',
+        type: 'positive'
       },
       warning: {
         icon: 'fa fa-exclamation',
         color: 'warning',
-        type: 'warning',
+        type: 'warning'
       },
       error: {
         icon: 'fa fa-exclamation',
         color: 'negative',
-        type: 'negative',
-      },
+        type: 'negative'
+      }
     };
 
   Vue.use(Quasar, {

@@ -1,56 +1,50 @@
-const { Dark, QSpinnerGears } = import('quasar')
-const color = Dark.isActive ? 'accent' : 'primary'
+import { Dark, QSpinnerGears } from 'quasar';
+const color = Dark.isActive ? 'accent' : 'primary';
 const dialogDefaults = {
     title: 'Loading ...',
     dark: Dark.isActive,
     message: '0%',
     progress: {
       spinner: QSpinnerGears,
-      color,
+      color
     },
     persistent: false, // we want the user to not be able to close it
-    ok: false,
+    ok: false
   },
   notifyDefaults = {
     timeout: 10000,
-    position: 'top',
+    position: 'top'
   },
   loadingDefaults = {
     spinner: QSpinnerGears,
-    message: 'Processing ...',
+    message: 'Processing ...'
   },
   loadingBarDefaults = {
     color: 'amber-7',
     size: '10px',
-    position: 'top',
+    position: 'top'
   },
   defaultStyles = {
     info: {
       icon: 'fa fa-check',
       color: 'info',
-      type: 'info',
+      type: 'info'
     },
     success: {
       icon: 'fa fa-check',
       color: 'positive',
-      type: 'positive',
+      type: 'positive'
     },
     warning: {
       icon: 'fa fa-exclamation',
       color: 'warning',
-      type: 'warning',
+      type: 'warning'
     },
     error: {
       icon: 'fa fa-exclamation',
       color: 'negative',
-      type: 'negative',
-    },
-  }
+      type: 'negative'
+    }
+  };
 
-export {
-  dialogDefaults,
-  notifyDefaults,
-  loadingBarDefaults,
-  defaultStyles,
-  loadingDefaults,
-}
+export { dialogDefaults, notifyDefaults, loadingBarDefaults, defaultStyles, loadingDefaults };
