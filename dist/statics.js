@@ -1,4 +1,4 @@
-const { Dark, QSpinnerGears } = import('quasar')
+import { Dark, QSpinnerGears } from 'quasar'
 const color = Dark.isActive ? 'accent' : 'primary'
 const dialogDefaults = {
     title: 'Loading ...',
