@@ -1,5 +1,6 @@
 import store from './store'
 import { config, storage } from './config'
+import { conf } from './conf'
 import { note, Notify } from './note'
 const Utils = {
   Store: store,
@@ -11,6 +12,7 @@ const Utils = {
   storage,
   note,
   Notify,
+  conf
 }
 
-export { store, config, storage, note, Notify, Utils }
+export { store, config, conf, storage, note, Notify, Utils }

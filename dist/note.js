@@ -78,7 +78,7 @@
 
 
   }
-  var queue$1 = [];
+  var queue$2 = [];
   var draining = false;
   var currentQueue;
   var queueIndex = -1;
@@ -89,11 +89,11 @@
       }
       draining = false;
       if (currentQueue.length) {
-          queue$1 = currentQueue.concat(queue$1);
+          queue$2 = currentQueue.concat(queue$2);
       } else {
           queueIndex = -1;
       }
-      if (queue$1.length) {
+      if (queue$2.length) {
           drainQueue();
       }
   }
@@ -105,17 +105,17 @@
       var timeout = runTimeout(cleanUpNextTick);
       draining = true;
 
-      var len = queue$1.length;
+      var len = queue$2.length;
       while(len) {
-          currentQueue = queue$1;
-          queue$1 = [];
+          currentQueue = queue$2;
+          queue$2 = [];
           while (++queueIndex < len) {
               if (currentQueue) {
                   currentQueue[queueIndex].run();
               }
           }
           queueIndex = -1;
-          len = queue$1.length;
+          len = queue$2.length;
       }
       currentQueue = null;
       draining = false;
@@ -128,8 +128,8 @@
               args[i - 1] = arguments[i];
           }
       }
-      queue$1.push(new Item(fun, args));
-      if (queue$1.length === 1 && !draining) {
+      queue$2.push(new Item(fun, args));
+      if (queue$2.length === 1 && !draining) {
           runTimeout(drainQueue);
       }
   }
@@ -231,8 +231,8 @@
   };
 
   /*!
-   * Vue.js v2.6.12
-   * (c) 2014-2020 Evan You
+   * Vue.js v2.6.14
+   * (c) 2014-2021 Evan You
    * Released under the MIT License.
    */
   /*  */
@@ -406,7 +406,7 @@
   /**
    * Capitalize a string.
    */
-  var capitalize = cached(function (str) {
+  var capitalize$1 = cached(function (str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
   });
 
@@ -1804,7 +1804,7 @@
     if (hasOwn$1(assets, id)) { return assets[id] }
     var camelizedId = camelize(id);
     if (hasOwn$1(assets, camelizedId)) { return assets[camelizedId] }
-    var PascalCaseId = capitalize(camelizedId);
+    var PascalCaseId = capitalize$1(camelizedId);
     if (hasOwn$1(assets, PascalCaseId)) { return assets[PascalCaseId] }
     // fallback to prototype chain
     var res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
@@ -1921,13 +1921,14 @@
         type = [type];
       }
       for (var i = 0; i < type.length && !valid; i++) {
-        var assertedType = assertType(value, type[i]);
+        var assertedType = assertType(value, type[i], vm);
         expectedTypes.push(assertedType.expectedType || '');
         valid = assertedType.valid;
       }
     }
 
-    if (!valid) {
+    var haveExpectedTypes = expectedTypes.some(function (t) { return t; });
+    if (!valid && haveExpectedTypes) {
       warn(
         getInvalidTypeMessage(name, value, expectedTypes),
         vm
@@ -1945,9 +1946,9 @@
     }
   }
 
-  var simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/;
+  var simpleCheckRE = /^(String|Number|Boolean|Function|Symbol|BigInt)$/;
 
-  function assertType (value, type) {
+  function assertType (value, type, vm) {
     var valid;
     var expectedType = getType(type);
     if (simpleCheckRE.test(expectedType)) {
@@ -1962,7 +1963,12 @@
     } else if (expectedType === 'Array') {
       valid = Array.isArray(value);
     } else {
-      valid = value instanceof type;
+      try {
+        valid = value instanceof type;
+      } catch (e) {
+        warn('Invalid prop type: "' + String(type) + '" is not a constructor', vm);
+        valid = false;
+      }
     }
     return {
       valid: valid,
@@ -1970,13 +1976,15 @@
     }
   }
 
+  var functionTypeCheckRE = /^\s*function (\w+)/;
+
   /**
    * Use function string name to check built-in types,
    * because a simple equality check will fail when running
    * across different vms / iframes.
    */
   function getType (fn) {
-    var match = fn && fn.toString().match(/^\s*function (\w+)/);
+    var match = fn && fn.toString().match(functionTypeCheckRE);
     return match ? match[1] : ''
   }
 
@@ -1998,21 +2006,22 @@
 
   function getInvalidTypeMessage (name, value, expectedTypes) {
     var message = "Invalid prop: type check failed for prop \"" + name + "\"." +
-      " Expected " + (expectedTypes.map(capitalize).join(', '));
+      " Expected " + (expectedTypes.map(capitalize$1).join(', '));
     var expectedType = expectedTypes[0];
     var receivedType = toRawType(value);
-    var expectedValue = styleValue(value, expectedType);
-    var receivedValue = styleValue(value, receivedType);
     // check if we need to specify expected value
-    if (expectedTypes.length === 1 &&
-        isExplicable(expectedType) &&
-        !isBoolean(expectedType, receivedType)) {
-      message += " with value " + expectedValue;
+    if (
+      expectedTypes.length === 1 &&
+      isExplicable(expectedType) &&
+      isExplicable(typeof value) &&
+      !isBoolean(expectedType, receivedType)
+    ) {
+      message += " with value " + (styleValue(value, expectedType));
     }
     message += ", got " + receivedType + " ";
     // check if we need to specify received value
     if (isExplicable(receivedType)) {
-      message += "with value " + receivedValue + ".";
+      message += "with value " + (styleValue(value, receivedType)) + ".";
     }
     return message
   }
@@ -2027,9 +2036,9 @@
     }
   }
 
+  var EXPLICABLE_TYPES = ['string', 'number', 'boolean'];
   function isExplicable (value) {
-    var explicitTypes = ['string', 'number', 'boolean'];
-    return explicitTypes.some(function (elem) { return value.toLowerCase() === elem; })
+    return EXPLICABLE_TYPES.some(function (elem) { return value.toLowerCase() === elem; })
   }
 
   function isBoolean () {
@@ -2233,7 +2242,7 @@
     var allowedGlobals = makeMap(
       'Infinity,undefined,NaN,isFinite,isNaN,' +
       'parseFloat,parseInt,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,' +
-      'Math,Number,Date,Array,Object,Boolean,String,RegExp,Map,Set,JSON,Intl,' +
+      'Math,Number,Date,Array,Object,Boolean,String,RegExp,Map,Set,JSON,Intl,BigInt,' +
       'require' // for Webpack/Browserify
     );
 
@@ -2759,6 +2768,12 @@
 
   /*  */
 
+  function isAsyncPlaceholder (node) {
+    return node.isComment && node.asyncFactory
+  }
+
+  /*  */
+
   function normalizeScopedSlots (
     slots,
     normalSlots,
@@ -2815,9 +2830,10 @@
       res = res && typeof res === 'object' && !Array.isArray(res)
         ? [res] // single vnode
         : normalizeChildren(res);
+      var vnode = res && res[0];
       return res && (
-        res.length === 0 ||
-        (res.length === 1 && res[0].isComment) // #9658
+        !vnode ||
+        (res.length === 1 && vnode.isComment && !isAsyncPlaceholder(vnode)) // #9658, #10391
       ) ? undefined
         : res
     };
@@ -2890,26 +2906,28 @@
    */
   function renderSlot (
     name,
-    fallback,
+    fallbackRender,
     props,
     bindObject
   ) {
     var scopedSlotFn = this.$scopedSlots[name];
     var nodes;
-    if (scopedSlotFn) { // scoped slot
+    if (scopedSlotFn) {
+      // scoped slot
       props = props || {};
       if (bindObject) {
         if (!isObject(bindObject)) {
-          warn(
-            'slot v-bind without argument expects an Object',
-            this
-          );
+          warn('slot v-bind without argument expects an Object', this);
         }
         props = extend$1(extend$1({}, bindObject), props);
       }
-      nodes = scopedSlotFn(props) || fallback;
+      nodes =
+        scopedSlotFn(props) ||
+        (typeof fallbackRender === 'function' ? fallbackRender() : fallbackRender);
     } else {
-      nodes = this.$slots[name] || fallback;
+      nodes =
+        this.$slots[name] ||
+        (typeof fallbackRender === 'function' ? fallbackRender() : fallbackRender);
     }
 
     var target = props && props.slot;
@@ -2959,6 +2977,7 @@
     } else if (eventKeyName) {
       return hyphenate(eventKeyName) !== key
     }
+    return eventKeyCode === undefined
   }
 
   /*  */
@@ -3183,7 +3202,7 @@
     parent,
     Ctor
   ) {
-    var this$1 = this;
+    var this$1$1 = this;
 
     var options = Ctor.options;
     // ensure the createElement function in functional components
@@ -3211,13 +3230,13 @@
     this.listeners = data.on || emptyObject;
     this.injections = resolveInject(options.inject, parent);
     this.slots = function () {
-      if (!this$1.$slots) {
+      if (!this$1$1.$slots) {
         normalizeScopedSlots(
           data.scopedSlots,
-          this$1.$slots = resolveSlots(children, parent)
+          this$1$1.$slots = resolveSlots(children, parent)
         );
       }
-      return this$1.$slots
+      return this$1$1.$slots
     };
 
     Object.defineProperty(this, 'scopedSlots', ({
@@ -3490,8 +3509,10 @@
   }
 
   function createComponentInstanceForVnode (
-    vnode, // we know it's MountedComponentVNode but flow doesn't
-    parent // activeInstance in lifecycle state
+    // we know it's MountedComponentVNode but flow doesn't
+    vnode,
+    // activeInstance in lifecycle state
+    parent
   ) {
     var options = {
       _isComponent: true,
@@ -3630,7 +3651,7 @@
       ns = (context.$vnode && context.$vnode.ns) || config$1.getTagNamespace(tag);
       if (config$1.isReservedTag(tag)) {
         // platform built-in elements
-        if (isDef(data) && isDef(data.nativeOn)) {
+        if (isDef(data) && isDef(data.nativeOn) && data.tag !== 'component') {
           warn(
             ("The .native modifier for v-on is only valid on components but it was used on <" + tag + ">."),
             context
@@ -3953,12 +3974,6 @@
         ? factory.loadingComp
         : factory.resolved
     }
-  }
-
-  /*  */
-
-  function isAsyncPlaceholder (node) {
-    return node.isComment && node.asyncFactory
   }
 
   /*  */
@@ -4329,7 +4344,8 @@
     var hasDynamicScopedSlot = !!(
       (newScopedSlots && !newScopedSlots.$stable) ||
       (oldScopedSlots !== emptyObject && !oldScopedSlots.$stable) ||
-      (newScopedSlots && vm.$scopedSlots.$key !== newScopedSlots.$key)
+      (newScopedSlots && vm.$scopedSlots.$key !== newScopedSlots.$key) ||
+      (!newScopedSlots && vm.$scopedSlots.$key)
     );
 
     // Any static slot children from the parent may have changed during parent's
@@ -4448,7 +4464,7 @@
 
   var MAX_UPDATE_COUNT = 100;
 
-  var queue = [];
+  var queue$1 = [];
   var activatedChildren = [];
   var has$1 = {};
   var circular = {};
@@ -4460,7 +4476,7 @@
    * Reset the scheduler's state.
    */
   function resetSchedulerState () {
-    index = queue.length = activatedChildren.length = 0;
+    index = queue$1.length = activatedChildren.length = 0;
     has$1 = {};
     {
       circular = {};
@@ -4515,12 +4531,12 @@
     //    user watchers are created before the render watcher)
     // 3. If a component is destroyed during a parent component's watcher run,
     //    its watchers can be skipped.
-    queue.sort(function (a, b) { return a.id - b.id; });
+    queue$1.sort(function (a, b) { return a.id - b.id; });
 
     // do not cache length because more watchers might be pushed
     // as we run existing watchers
-    for (index = 0; index < queue.length; index++) {
-      watcher = queue[index];
+    for (index = 0; index < queue$1.length; index++) {
+      watcher = queue$1[index];
       if (watcher.before) {
         watcher.before();
       }
@@ -4546,7 +4562,7 @@
 
     // keep copies of post queues before resetting state
     var activatedQueue = activatedChildren.slice();
-    var updatedQueue = queue.slice();
+    var updatedQueue = queue$1.slice();
 
     resetSchedulerState();
 
@@ -4600,15 +4616,15 @@
     if (has$1[id] == null) {
       has$1[id] = true;
       if (!flushing) {
-        queue.push(watcher);
+        queue$1.push(watcher);
       } else {
         // if already flushing, splice the watcher based on its id
         // if already past its id, it will be run next immediately.
-        var i = queue.length - 1;
-        while (i > index && queue[i].id > watcher.id) {
+        var i = queue$1.length - 1;
+        while (i > index && queue$1[i].id > watcher.id) {
           i--;
         }
-        queue.splice(i + 1, 0, watcher);
+        queue$1.splice(i + 1, 0, watcher);
       }
       // queue the flush
       if (!waiting) {
@@ -4782,11 +4798,8 @@
         var oldValue = this.value;
         this.value = value;
         if (this.user) {
-          try {
-            this.cb.call(this.vm, value, oldValue);
-          } catch (e) {
-            handleError(e, this.vm, ("callback for watcher \"" + (this.expression) + "\""));
-          }
+          var info = "callback for watcher \"" + (this.expression) + "\"";
+          invokeWithErrorHandling(this.cb, this.vm, [value, oldValue], this.vm, info);
         } else {
           this.cb.call(this.vm, value, oldValue);
         }
@@ -5008,6 +5021,8 @@
           warn(("The computed property \"" + key + "\" is already defined in data."), vm);
         } else if (vm.$options.props && key in vm.$options.props) {
           warn(("The computed property \"" + key + "\" is already defined as a prop."), vm);
+        } else if (vm.$options.methods && key in vm.$options.methods) {
+          warn(("The computed property \"" + key + "\" is already defined as a method."), vm);
         }
       }
     }
@@ -5160,11 +5175,10 @@
       options.user = true;
       var watcher = new Watcher(vm, expOrFn, cb, options);
       if (options.immediate) {
-        try {
-          cb.call(vm, watcher.value);
-        } catch (error) {
-          handleError(error, vm, ("callback for immediate watcher \"" + (watcher.expression) + "\""));
-        }
+        var info = "callback for immediate watcher \"" + (watcher.expression) + "\"";
+        pushTarget();
+        invokeWithErrorHandling(cb, vm, [watcher.value], vm, info);
+        popTarget();
       }
       return function unwatchFn () {
         watcher.teardown();
@@ -5462,6 +5476,8 @@
 
 
 
+
+
   function getComponentName (opts) {
     return opts && (opts.Ctor.options.name || opts.tag)
   }
@@ -5483,9 +5499,9 @@
     var keys = keepAliveInstance.keys;
     var _vnode = keepAliveInstance._vnode;
     for (var key in cache) {
-      var cachedNode = cache[key];
-      if (cachedNode) {
-        var name = getComponentName(cachedNode.componentOptions);
+      var entry = cache[key];
+      if (entry) {
+        var name = entry.name;
         if (name && !filter(name)) {
           pruneCacheEntry(cache, key, keys, _vnode);
         }
@@ -5499,9 +5515,9 @@
     keys,
     current
   ) {
-    var cached$$1 = cache[key];
-    if (cached$$1 && (!current || cached$$1.tag !== current.tag)) {
-      cached$$1.componentInstance.$destroy();
+    var entry = cache[key];
+    if (entry && (!current || entry.tag !== current.tag)) {
+      entry.componentInstance.$destroy();
     }
     cache[key] = null;
     remove$1(keys, key);
@@ -5519,6 +5535,32 @@
       max: [String, Number]
     },
 
+    methods: {
+      cacheVNode: function cacheVNode() {
+        var ref = this;
+        var cache = ref.cache;
+        var keys = ref.keys;
+        var vnodeToCache = ref.vnodeToCache;
+        var keyToCache = ref.keyToCache;
+        if (vnodeToCache) {
+          var tag = vnodeToCache.tag;
+          var componentInstance = vnodeToCache.componentInstance;
+          var componentOptions = vnodeToCache.componentOptions;
+          cache[keyToCache] = {
+            name: getComponentName(componentOptions),
+            tag: tag,
+            componentInstance: componentInstance,
+          };
+          keys.push(keyToCache);
+          // prune oldest entry
+          if (this.max && keys.length > parseInt(this.max)) {
+            pruneCacheEntry(cache, keys[0], keys, this._vnode);
+          }
+          this.vnodeToCache = null;
+        }
+      }
+    },
+
     created: function created () {
       this.cache = Object.create(null);
       this.keys = [];
@@ -5531,14 +5573,19 @@
     },
 
     mounted: function mounted () {
-      var this$1 = this;
+      var this$1$1 = this;
 
+      this.cacheVNode();
       this.$watch('include', function (val) {
-        pruneCache(this$1, function (name) { return matches(val, name); });
+        pruneCache(this$1$1, function (name) { return matches(val, name); });
       });
       this.$watch('exclude', function (val) {
-        pruneCache(this$1, function (name) { return !matches(val, name); });
+        pruneCache(this$1$1, function (name) { return !matches(val, name); });
       });
+    },
+
+    updated: function updated () {
+      this.cacheVNode();
     },
 
     render: function render () {
@@ -5574,12 +5621,9 @@
           remove$1(keys, key);
           keys.push(key);
         } else {
-          cache[key] = vnode;
-          keys.push(key);
-          // prune oldest entry
-          if (this.max && keys.length > parseInt(this.max)) {
-            pruneCacheEntry(cache, keys[0], keys, this._vnode);
-          }
+          // delay setting the cache until update
+          this.vnodeToCache = vnode;
+          this.keyToCache = key;
         }
 
         vnode.data.keepAlive = true;
@@ -5662,7 +5706,7 @@
     value: FunctionalRenderContext
   });
 
-  Vue.version = '2.6.12';
+  Vue.version = '2.6.14';
 
   /*  */
 
@@ -5699,7 +5743,7 @@
     'default,defaultchecked,defaultmuted,defaultselected,defer,disabled,' +
     'enabled,formnovalidate,hidden,indeterminate,inert,ismap,itemscope,loop,multiple,' +
     'muted,nohref,noresize,noshade,novalidate,nowrap,open,pauseonexit,readonly,' +
-    'required,reversed,scoped,seamless,selected,sortable,translate,' +
+    'required,reversed,scoped,seamless,selected,sortable,' +
     'truespeed,typemustmatch,visible'
   );
 
@@ -5823,7 +5867,7 @@
   // contain child elements.
   var isSVG = makeMap(
     'svg,animate,circle,clippath,cursor,defs,desc,ellipse,filter,font-face,' +
-    'foreignObject,g,glyph,image,line,marker,mask,missing-glyph,path,pattern,' +
+    'foreignobject,g,glyph,image,line,marker,mask,missing-glyph,path,pattern,' +
     'polygon,polyline,rect,switch,symbol,text,textpath,tspan,use,view',
     true
   );
@@ -6026,7 +6070,8 @@
 
   function sameVnode (a, b) {
     return (
-      a.key === b.key && (
+      a.key === b.key &&
+      a.asyncFactory === b.asyncFactory && (
         (
           a.tag === b.tag &&
           a.isComment === b.isComment &&
@@ -6034,7 +6079,6 @@
           sameInputType(a, b)
         ) || (
           isTrue(a.isAsyncPlaceholder) &&
-          a.asyncFactory === b.asyncFactory &&
           isUndef(b.asyncFactory.error)
         )
       )
@@ -6922,7 +6966,7 @@
       cur = attrs[key];
       old = oldAttrs[key];
       if (old !== cur) {
-        setAttr(elm, key, cur);
+        setAttr(elm, key, cur, vnode.data.pre);
       }
     }
     // #4391: in IE9, setting type can reset value for input[type=radio]
@@ -6942,8 +6986,8 @@
     }
   }
 
-  function setAttr (el, key, value) {
-    if (el.tagName.indexOf('-') > -1) {
+  function setAttr (el, key, value, isInPre) {
+    if (isInPre || el.tagName.indexOf('-') > -1) {
       baseSetAttr(el, key, value);
     } else if (isBooleanAttr(key)) {
       // set attribute for blank value
@@ -7437,7 +7481,7 @@
     }
   }
 
-  var style = {
+  var style$1 = {
     create: updateStyle,
     update: updateStyle
   };
@@ -8016,7 +8060,7 @@
     klass,
     events,
     domProps,
-    style,
+    style$1,
     transition
   ];
 
@@ -8313,7 +8357,7 @@
     abstract: true,
 
     render: function render (h) {
-      var this$1 = this;
+      var this$1$1 = this;
 
       var children = this.$slots.default;
       if (!children) {
@@ -8405,8 +8449,8 @@
           // return placeholder node and queue update when leave finishes
           this._leaving = true;
           mergeVNodeHook(oldData, 'afterLeave', function () {
-            this$1._leaving = false;
-            this$1.$forceUpdate();
+            this$1$1._leaving = false;
+            this$1$1.$forceUpdate();
           });
           return placeholder(h, rawChild)
         } else if (mode === 'in-out') {
@@ -8438,21 +8482,21 @@
     props: props$2,
 
     beforeMount: function beforeMount () {
-      var this$1 = this;
+      var this$1$1 = this;
 
       var update = this._update;
       this._update = function (vnode, hydrating) {
-        var restoreActiveInstance = setActiveInstance(this$1);
+        var restoreActiveInstance = setActiveInstance(this$1$1);
         // force removing pass
-        this$1.__patch__(
-          this$1._vnode,
-          this$1.kept,
+        this$1$1.__patch__(
+          this$1$1._vnode,
+          this$1$1.kept,
           false, // hydrating
           true // removeOnly (!important, avoids unnecessary moves)
         );
-        this$1._vnode = this$1.kept;
+        this$1$1._vnode = this$1$1.kept;
         restoreActiveInstance();
-        update.call(this$1, vnode, hydrating);
+        update.call(this$1$1, vnode, hydrating);
       };
     },
 
@@ -8650,15 +8694,13 @@
     }, 0);
   }
 
-  var version = "1.15.10";
+  var version = "1.15.21";
 
   /* eslint-disable no-useless-escape */
 
   const isSSR = typeof window === 'undefined';
   let fromSSR = false;
   let onSSR = isSSR;
-
-  let iosEmulated = false;
   let iosCorrection;
 
   function getMatch (userAgent, platformMatch) {
@@ -8998,7 +9040,7 @@
     };
   }
   else {
-    iosEmulated = client.is.ios === true &&
+    client.is.ios === true &&
       window.navigator.vendor.toLowerCase().indexOf('apple') === -1;
   }
 
@@ -9029,6 +9071,14 @@
 
   function leftClick (e) {
     return e.button === 0
+  }
+
+  function middleClick (e) {
+    return e.button === 1
+  }
+
+  function rightClick (e) {
+    return e.button === 2
   }
 
   function position (e) {
@@ -9070,6 +9120,27 @@
 
       el = el.parentElement;
     }
+  }
+
+  // Reasonable defaults
+  const
+    LINE_HEIGHT = 40,
+    PAGE_HEIGHT = 800;
+
+  function getMouseWheelDistance (e) {
+    let x = e.deltaX, y = e.deltaY;
+
+    if ((x || y) && e.deltaMode) {
+      const multiplier = e.deltaMode === 1 ? LINE_HEIGHT : PAGE_HEIGHT;
+      x *= multiplier;
+      y *= multiplier;
+    }
+
+    if (e.shiftKey && !x) {
+      [y, x] = [x, y];
+    }
+
+    return { x, y }
   }
 
   function stop (e) {
@@ -9150,6 +9221,25 @@
       ctx[name] = void 0;
     }
   }
+
+  /*
+   * also update /types/utils/event.d.ts
+   */
+
+  var event = {
+    listenOpts,
+    leftClick,
+    middleClick,
+    rightClick,
+    position,
+    getEventPath,
+    getMouseWheelDistance,
+    stop,
+    prevent,
+    stopAndPrevent,
+    preventDraggable,
+    create
+  };
 
   function debounce (fn, wait = 250, immediate) {
     let timeout;
@@ -9491,9 +9581,9 @@
       // then we got nothing to do
       if (
         // if we're on Capacitor mode
-        capacitor === true
+        capacitor === true &&
         // and it's also not in Capacitor's main instance
-        && (window.Capacitor === void 0 || window.Capacitor.Plugins.App === void 0)
+        (window.Capacitor === void 0 || window.Capacitor.Plugins.App === void 0)
       ) {
         return
       }
@@ -9888,6 +9978,29 @@
     return rgb
   }
 
+  /* works as darken if percent < 0 */
+  function lighten (color, percent) {
+    if (typeof color !== 'string') {
+      throw new TypeError('Expected a string as color')
+    }
+    if (typeof percent !== 'number') {
+      throw new TypeError('Expected a numeric percent')
+    }
+
+    const rgb = textToRgb(color),
+      t = percent < 0 ? 0 : 255,
+      p = Math.abs(percent) / 100,
+      R = rgb.r,
+      G = rgb.g,
+      B = rgb.b;
+
+    return '#' + (
+      0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 +
+      (Math.round((t - G) * p) + G) * 0x100 +
+      (Math.round((t - B) * p) + B)
+    ).toString(16).slice(1)
+  }
+
   function luminosity (color) {
     if (typeof color !== 'string' && (!color || color.r === void 0)) {
       throw new TypeError('Expected a string or a {r, g, b} object as color')
@@ -9902,6 +10015,66 @@
       G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4),
       B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
     return 0.2126 * R + 0.7152 * G + 0.0722 * B
+  }
+
+  function brightness (color) {
+    if (typeof color !== 'string' && (!color || color.r === void 0)) {
+      throw new TypeError('Expected a string or a {r, g, b} object as color')
+    }
+
+    const rgb = typeof color === 'string'
+      ? textToRgb(color)
+      : color;
+
+    return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000
+  }
+
+  function blend (fgColor, bgColor) {
+    if (typeof fgColor !== 'string' && (!fgColor || fgColor.r === void 0)) {
+      throw new TypeError('Expected a string or a {r, g, b[, a]} object as fgColor')
+    }
+
+    if (typeof bgColor !== 'string' && (!bgColor || bgColor.r === void 0)) {
+      throw new TypeError('Expected a string or a {r, g, b[, a]} object as bgColor')
+    }
+
+    const
+      rgb1 = typeof fgColor === 'string' ? textToRgb(fgColor) : fgColor,
+      r1 = rgb1.r / 255,
+      g1 = rgb1.g / 255,
+      b1 = rgb1.b / 255,
+      a1 = rgb1.a !== void 0 ? rgb1.a / 100 : 1,
+      rgb2 = typeof bgColor === 'string' ? textToRgb(bgColor) : bgColor,
+      r2 = rgb2.r / 255,
+      g2 = rgb2.g / 255,
+      b2 = rgb2.b / 255,
+      a2 = rgb2.a !== void 0 ? rgb2.a / 100 : 1,
+      a = a1 + a2 * (1 - a1),
+      r = Math.round(((r1 * a1 + r2 * a2 * (1 - a1)) / a) * 255),
+      g = Math.round(((g1 * a1 + g2 * a2 * (1 - a1)) / a) * 255),
+      b = Math.round(((b1 * a1 + b2 * a2 * (1 - a1)) / a) * 255);
+
+    const ret = { r, g, b, a: Math.round(a * 100) };
+    return typeof fgColor === 'string'
+      ? rgbToHex(ret)
+      : ret
+  }
+
+  function changeAlpha (color, offset) {
+    if (typeof color !== 'string') {
+      throw new TypeError('Expected a string as color')
+    }
+
+    if (offset === void 0 || offset < -1 || offset > 1) {
+      throw new TypeError('Expected offset to be between -1 and 1')
+    }
+
+    const { r, g, b, a } = textToRgb(color);
+    const alpha = a !== void 0 ? a / 100 : 0;
+
+    return rgbToHex({
+      r, g, b, a: Math.round(Math.min(1, Math.max(0, alpha + offset)) * 100)
+    })
   }
 
   function setBrand (color, value, element = document.body) {
@@ -9928,6 +10101,39 @@
 
     return getComputedStyle(element).getPropertyValue(`--q-color-${color}`).trim() || null
   }
+
+  function getPaletteColor (colorName) {
+    if (typeof colorName !== 'string') {
+      throw new TypeError('Expected a string as color')
+    }
+
+    const el = document.createElement('div');
+
+    el.className = `text-${colorName} invisible fixed no-pointer-events`;
+    document.body.appendChild(el);
+
+    const result = getComputedStyle(el).getPropertyValue('color');
+
+    el.remove();
+
+    return rgbToHex(textToRgb(result))
+  }
+
+  var colors = {
+    rgbToHex,
+    hexToRgb,
+    hsvToRgb,
+    rgbToHsv,
+    textToRgb,
+    lighten,
+    luminosity,
+    brightness,
+    blend,
+    changeAlpha,
+    setBrand,
+    getBrand,
+    getPaletteColor
+  };
 
   let lastKeyCompositionStatus = false;
 
@@ -10356,6 +10562,10 @@
     return `${bytes.toFixed(1)}${units[u]}`
   }
 
+  function capitalize (str) {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
   function between (v, min, max) {
     return max <= min
       ? min
@@ -10387,6 +10597,14 @@
       ? val
       : new Array(length - val.length + 1).join(char) + val
   }
+
+  var format = {
+    humanStorageSize,
+    capitalize,
+    between,
+    normalizeToInterval,
+    pad
+  };
 
   function cache (vm, key, obj) {
     if (isSSR === true) return obj
@@ -11415,10 +11633,20 @@
     return { top, left }
   }
 
+  function style (el, property) {
+    return window.getComputedStyle(el).getPropertyValue(property)
+  }
+
   function height (el) {
     return el === window
       ? window.innerHeight
       : el.getBoundingClientRect().height
+  }
+
+  function width$1 (el) {
+    return el === window
+      ? window.innerWidth
+      : el.getBoundingClientRect().width
   }
 
   function css (element, css) {
@@ -11427,6 +11655,22 @@
     Object.keys(css).forEach(prop => {
       style[prop] = css[prop];
     });
+  }
+
+  function cssBatch (elements, style) {
+    elements.forEach(el => css(el, style));
+  }
+
+  function ready (fn) {
+    if (typeof fn !== 'function') {
+      return
+    }
+
+    if (document.readyState !== 'loading') {
+      return fn()
+    }
+
+    document.addEventListener('DOMContentLoaded', fn, false);
   }
 
   // internal
@@ -11455,6 +11699,16 @@
       )
       : document.body
   }
+
+  var dom = {
+    offset,
+    style,
+    height,
+    width: width$1,
+    css,
+    cssBatch,
+    ready
+  };
 
   function throttle (fn, limit = 250) {
     let wait = false, result;
@@ -11824,66 +12078,6 @@
     }
   };
 
-  const directions$1 = [ 'left', 'right', 'up', 'down', 'horizontal', 'vertical' ];
-
-  const modifiersAll = {
-    left: true,
-    right: true,
-    up: true,
-    down: true,
-    horizontal: true,
-    vertical: true,
-    all: true
-  };
-
-  function getModifierDirections (mod) {
-    const dir = {};
-
-    directions$1.forEach(direction => {
-      if (mod[direction]) {
-        dir[direction] = true;
-      }
-    });
-
-    if (Object.keys(dir).length === 0) {
-      return modifiersAll
-    }
-
-    if (dir.horizontal === true) {
-      dir.left = dir.right = true;
-    }
-    if (dir.vertical === true) {
-      dir.up = dir.down = true;
-    }
-    if (dir.left === true && dir.right === true) {
-      dir.horizontal = true;
-    }
-    if (dir.up === true && dir.down === true) {
-      dir.vertical = true;
-    }
-    if (dir.horizontal === true && dir.vertical === true) {
-      dir.all = true;
-    }
-
-    return dir
-  }
-
-  const getTouchTarget = isSSR === false && iosEmulated !== true && (
-    client.is.ios === true ||
-    window.navigator.vendor.toLowerCase().indexOf('apple') > -1
-  )
-    ? () => document
-    : target => target;
-
-  function shouldStart (evt, ctx) {
-    return ctx.event === void 0 &&
-      evt.target !== void 0 &&
-      evt.target.draggable !== true &&
-      typeof ctx.handler === 'function' &&
-      evt.target.nodeName.toUpperCase() !== 'INPUT' &&
-      (evt.qClonedBy === void 0 || evt.qClonedBy.indexOf(ctx.uid) === -1)
-  }
-
   const { passiveCapture: passiveCapture$1 } = listenOpts;
 
   let
@@ -11934,7 +12128,8 @@
             keyup: this.__onLoadingEvt
           }
         }
-        else if (this.isActionable === true) {
+
+        if (this.isActionable === true) {
           const on = {
             ...this.qListeners,
             click: this.click,
@@ -11949,7 +12144,10 @@
           return on
         }
 
-        return {}
+        return {
+          // needed; especially for disabled <a> tags
+          click: stopAndPrevent
+        }
       },
 
       directives () {
@@ -12049,7 +12247,7 @@
         if (touchTarget !== this.$el) {
           touchTarget !== void 0 && this.__cleanup();
           touchTarget = this.$el;
-          const target = this.touchTargetEl = getTouchTarget(e.target);
+          const target = this.touchTargetEl = e.target;
           target.addEventListener('touchcancel', this.__onPressEnd, passiveCapture$1);
           target.addEventListener('touchend', this.__onPressEnd, passiveCapture$1);
         }
@@ -12360,7 +12558,7 @@
         this.hide(evt);
         this.anchorEl.classList.add('non-selectable');
 
-        const target = getTouchTarget(evt.target);
+        const target = evt.target;
         addEvt(this, 'anchor', [
           [ target, 'touchmove', '__mobileCleanup', 'passive' ],
           [ target, 'touchend', '__mobileCleanup', 'passive' ],
@@ -12649,6 +12847,43 @@
     }
   };
 
+  let queue = [];
+  const waitFlags = [];
+
+  function addFocusWaitFlag (flag) {
+    waitFlags.push(flag);
+  }
+
+  function removeFocusWaitFlag (flag) {
+    const index = waitFlags.indexOf(flag);
+    if (index !== -1) {
+      waitFlags.splice(index, 1);
+    }
+
+    if (waitFlags.length === 0 && queue.length > 0) {
+      // only call last focus handler (can't focus multiple things at once)
+      queue[ queue.length - 1 ]();
+      queue = [];
+    }
+  }
+
+  function addFocusFn (fn) {
+    if (waitFlags.length === 0) {
+      fn();
+    }
+    else {
+      queue.push(fn);
+      return fn
+    }
+  }
+
+  function removeFocusFn (fn) {
+    const index = queue.indexOf(fn);
+    if (index !== -1) {
+      queue.splice(index, 1);
+    }
+  }
+
   function closePortalMenus (vm, evt) {
     do {
       if (vm.$options.name === 'QMenu') {
@@ -12720,7 +12955,18 @@
     },
 
     methods: {
-      __showPortal () {
+      __showPortal (isReady) {
+        if (isReady === true) {
+          removeFocusWaitFlag(this.focusObj);
+          return
+        }
+
+        if (this.focusObj === void 0) {
+          this.focusObj = {};
+        }
+
+        addFocusWaitFlag(this.focusObj);
+
         if (this.$q.fullscreen !== void 0 && this.$q.fullscreen.isCapable === true) {
           const append = isFullscreen => {
             if (this.__portal === void 0) {
@@ -12754,6 +13000,8 @@
       },
 
       __hidePortal () {
+        removeFocusWaitFlag(this.focusObj);
+
         if (this.__portal !== void 0) {
           if (this.unwatchFullscreen !== void 0) {
             this.unwatchFullscreen();
@@ -12849,9 +13097,6 @@
   function getVmOfNode (el) {
     for (let node = el; node !== null; node = node.parentNode) {
       // node.__vue__ can be null if the instance was destroyed
-      if (node.__vue__ === null) {
-        return
-      }
       if (node.__vue__ !== void 0) {
         return node.__vue__
       }
@@ -12859,6 +13104,11 @@
   }
 
   function isVmChildOf (childVm, parentVm) {
+    // node.__vue__ can be null if the instance was destroyed
+    if (childVm === null || parentVm === null) {
+      return null
+    }
+
     for (let vm = childVm; vm !== void 0; vm = vm.$parent) {
       if (vm === parentVm) {
         return true
@@ -12928,7 +13178,7 @@
 
           if (
             evt.qClickOutside !== true &&
-            target !== void 0 &&
+            document.body.contains(target) === true &&
             target.nodeType !== 8 &&
             // directives that prevent click by using pointer-events none generate click on html element
             target !== document.documentElement &&
@@ -13034,6 +13284,10 @@
 
   function getScrollHeight (el) {
     return (el === window ? document.body : el).scrollHeight
+  }
+
+  function getScrollWidth (el) {
+    return (el === window ? document.body : el).scrollWidth
   }
 
   function getScrollPosition (scrollTarget) {
@@ -13187,6 +13441,25 @@
         )
       )
   }
+
+  var scroll = {
+    getScrollTarget,
+
+    getScrollHeight,
+    getScrollWidth,
+
+    getScrollPosition,
+    getHorizontalScrollPosition,
+
+    animScrollTo,
+    animHorizontalScrollTo,
+
+    setScrollPosition,
+    setHorizontalScrollPosition,
+
+    getScrollbarWidth,
+    hasScrollbar
+  };
 
   const handlers = [];
   let escDown = false;
@@ -13576,14 +13849,16 @@
 
     methods: {
       focus () {
-        let node = this.__portal !== void 0 && this.__portal.$refs !== void 0
-          ? this.__portal.$refs.inner
-          : void 0;
+        addFocusFn(() => {
+          let node = this.__portal !== void 0 && this.__portal.$refs !== void 0
+            ? this.__portal.$refs.inner
+            : void 0;
 
-        if (node !== void 0 && node.contains(document.activeElement) !== true) {
-          node = node.querySelector('[autofocus], [data-autofocus]') || node;
-          node.focus();
-        }
+          if (node !== void 0 && node.contains(document.activeElement) !== true) {
+            node = node.querySelector('[autofocus], [data-autofocus]') || node;
+            node.focus();
+          }
+        });
       },
 
       __show (evt) {
@@ -13642,6 +13917,7 @@
           }
 
           this.updatePosition();
+          this.__showPortal(true);
           this.$emit('show', evt);
         }, 300);
       },
@@ -14270,6 +14546,59 @@
     }
   });
 
+  const directions$1 = [ 'left', 'right', 'up', 'down', 'horizontal', 'vertical' ];
+
+  const modifiersAll = {
+    left: true,
+    right: true,
+    up: true,
+    down: true,
+    horizontal: true,
+    vertical: true,
+    all: true
+  };
+
+  function getModifierDirections (mod) {
+    const dir = {};
+
+    directions$1.forEach(direction => {
+      if (mod[direction]) {
+        dir[direction] = true;
+      }
+    });
+
+    if (Object.keys(dir).length === 0) {
+      return modifiersAll
+    }
+
+    if (dir.horizontal === true) {
+      dir.left = dir.right = true;
+    }
+    if (dir.vertical === true) {
+      dir.up = dir.down = true;
+    }
+    if (dir.left === true && dir.right === true) {
+      dir.horizontal = true;
+    }
+    if (dir.up === true && dir.down === true) {
+      dir.vertical = true;
+    }
+    if (dir.horizontal === true && dir.vertical === true) {
+      dir.all = true;
+    }
+
+    return dir
+  }
+
+  function shouldStart (evt, ctx) {
+    return ctx.event === void 0 &&
+      evt.target !== void 0 &&
+      evt.target.draggable !== true &&
+      typeof ctx.handler === 'function' &&
+      evt.target.nodeName.toUpperCase() !== 'INPUT' &&
+      (evt.qClonedBy === void 0 || evt.qClonedBy.indexOf(ctx.uid) === -1)
+  }
+
   function parseArg (arg) {
     // delta (min velocity -- dist / time)
     // mobile min distance on first move
@@ -14337,7 +14666,7 @@
 
         touchStart (evt) {
           if (shouldStart(evt, ctx)) {
-            const target = getTouchTarget(evt.target);
+            const target = evt.target;
             addEvt(ctx, 'temp', [
               [ target, 'touchmove', 'move', 'notPassiveCapture' ],
               [ target, 'touchcancel', 'end', 'notPassiveCapture' ],
@@ -15391,43 +15720,50 @@
     },
 
     methods: {
-      __getText (h) {
-        const
-          domPropText = this.textSanitize === true ? 'textContent' : 'innerHTML',
-          domPropStamp = this.stampSanitize === true ? 'textContent' : 'innerHTML';
+      __wrapStamp (h, node) {
+        if (this.$scopedSlots.stamp !== void 0) {
+          return [ node, h('div', { staticClass: 'q-message-stamp' }, this.$scopedSlots.stamp()) ]
+        }
 
-        return this.text.map((msg, index) => h('div', {
+        if (this.stamp) {
+          const domPropStamp = this.stampSanitize === true ? 'textContent' : 'innerHTML';
+
+          return [
+            node,
+            h('div', {
+              staticClass: 'q-message-stamp',
+              domProps: { [domPropStamp]: this.stamp }
+            })
+          ]
+        }
+
+        return [ node ]
+      },
+
+      __getText (h, contentList, withSlots) {
+        const domPropText = this.textSanitize === true ? 'textContent' : 'innerHTML';
+
+        if (
+          withSlots === true &&
+          contentList.some(entry => entry.tag === void 0 && entry.text !== void 0) === true
+        ) {
+          return [
+            h('div', { class: this.messageClass }, [
+              h('div', { class: this.textClass }, this.__wrapStamp(h, h('div', contentList)))
+            ])
+          ]
+        }
+
+        const content = withSlots === true
+          ? (contentList.length > 1 ? text => text : text => h('div', [ text ]))
+          : text => h('div', { domProps: { [domPropText]: text } });
+
+        return contentList.map((msg, index) => h('div', {
           key: index,
           class: this.messageClass
         }, [
-          h('div', { class: this.textClass }, [
-            h('div', { domProps: { [domPropText]: msg } }),
-            this.stamp
-              ? h('div', {
-                staticClass: 'q-message-stamp',
-                domProps: { [domPropStamp]: this.stamp }
-              })
-              : null
-          ])
+          h('div', { class: this.textClass }, this.__wrapStamp(h, content(msg)))
         ]))
-      },
-
-      __getMessage (h) {
-        const content = uniqueSlot(this, 'default', []);
-
-        this.stamp !== void 0 && content.push(
-          h('div', {
-            staticClass: 'q-message-stamp',
-            domProps: { [this.stampSanitize === true ? 'textContent' : 'innerHTML']: this.stamp }
-          })
-        );
-
-        return h('div', { class: this.messageClass }, [
-          h('div', {
-            staticClass: 'q-message-text-content',
-            class: this.textClass
-          }, content)
-        ])
       }
     },
 
@@ -15448,19 +15784,28 @@
 
       const msg = [];
 
-      this.name !== void 0 && msg.push(
-        h('div', {
-          class: `q-message-name q-message-name--${this.op}`,
-          domProps: { [this.nameSanitize === true ? 'textContent' : 'innerHTML']: this.name }
-        })
-      );
+      if (this.$scopedSlots.name !== void 0) {
+        msg.push(
+          h('div', {
+            class: `q-message-name q-message-name--${this.op}`
+          }, this.$scopedSlots.name())
+        );
+      }
+      else if (this.name !== void 0) {
+        msg.push(
+          h('div', {
+            class: `q-message-name q-message-name--${this.op}`,
+            domProps: { [this.nameSanitize === true ? 'textContent' : 'innerHTML']: this.name }
+          })
+        );
+      }
 
       this.text !== void 0 && msg.push(
-        this.__getText(h)
+        this.__getText(h, this.text)
       );
 
       this.$scopedSlots.default !== void 0 && msg.push(
-        this.__getMessage(h)
+        this.__getText(h, this.$scopedSlots.default(), true)
       );
 
       container.push(
@@ -15469,12 +15814,19 @@
 
       const child = [];
 
-      this.label && child.push(
-        h('div', {
-          staticClass: 'q-message-label text-center',
-          domProps: { [this.labelSanitize === true ? 'textContent' : 'innerHTML']: this.label }
-        })
-      );
+      if (this.$scopedSlots.label !== void 0) {
+        child.push(
+          h('div', { staticClass: 'q-message-label' }, this.$scopedSlots.label())
+        );
+      }
+      else if (this.label !== void 0) {
+        child.push(
+          h('div', {
+            staticClass: 'q-message-label',
+            domProps: { [this.labelSanitize === true ? 'textContent' : 'innerHTML']: this.label }
+          })
+        );
+      }
 
       child.push(
         h('div', { class: this.containerClass }, container)
@@ -16167,6 +16519,10 @@
     anyColor: v => hexOrHexa.test(v) || rgb.test(v) || rgba.test(v)
   };
 
+  var patterns = {
+    testPattern
+  };
+
   function getChanges (evt, ctx, isFinal) {
     const pos = position(evt);
     let
@@ -16343,7 +16699,7 @@
 
         touchStart (evt) {
           if (shouldStart(evt, ctx)) {
-            const target = getTouchTarget(evt.target);
+            const target = evt.target;
 
             addEvt(ctx, 'temp', [
               [ target, 'touchmove', 'move', 'notPassiveCapture' ],
@@ -19323,6 +19679,26 @@
     return res
   }
 
+  function extractDate (str, mask, dateLocale) {
+    const d = __splitDate(str, mask, dateLocale);
+
+    const date = new Date(
+      d.year,
+      d.month === null ? null : d.month - 1,
+      d.day,
+      d.hour,
+      d.minute,
+      d.second,
+      d.millisecond
+    );
+
+    const tzOffset = date.getTimezoneOffset();
+
+    return d.timezoneOffset === null || d.timezoneOffset === tzOffset
+      ? date
+      : getChange(date, { minutes: d.timezoneOffset - tzOffset }, true)
+  }
+
   function __splitDate (str, mask, dateLocale, calendar, defaultModel) {
     const date = {
       year: null,
@@ -19471,6 +19847,48 @@
     return sign + pad(hours) + delimeter + pad(minutes)
   }
 
+  function setMonth (date, newMonth /* 1-based */) {
+    const
+      test = new Date(date.getFullYear(), newMonth, 0, 0, 0, 0, 0),
+      days = test.getDate();
+
+    date.setMonth(newMonth - 1, Math.min(days, date.getDate()));
+  }
+
+  function getChange (date, mod, add) {
+    const
+      t = new Date(date),
+      sign = (add ? 1 : -1);
+
+    Object.keys(mod).forEach(key => {
+      if (key === 'month') {
+        setMonth(t, t.getMonth() + 1 + sign * mod.month);
+        return
+      }
+
+      const op = key === 'year'
+        ? 'FullYear'
+        : capitalize(key === 'days' ? 'date' : key);
+      t[`set${op}`](t[`get${op}`]() + sign * mod[key]);
+    });
+    return t
+  }
+
+  function isValid (date) {
+    return typeof date === 'number'
+      ? true
+      : isNaN(Date.parse(date)) === false
+  }
+
+  function buildDate (mod, utc) {
+    return adjustDate(new Date(), mod, utc)
+  }
+
+  function getDayOfWeek (date) {
+    const dow = new Date(date).getDay();
+    return dow === 0 ? 7 : dow
+  }
+
   function getWeekOfYear (date) {
     // Remove time components of date
     const thursday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -19493,6 +19911,52 @@
     return 1 + Math.floor(weekDiff)
   }
 
+  function getDayIdentifier (date) {
+    return date.getFullYear() * 10000 + date.getMonth() * 100 + date.getDate()
+  }
+
+  function getDateIdentifier (date, onlyDate /* = false */) {
+    const d = new Date(date);
+    return onlyDate === true ? getDayIdentifier(d) : d.getTime()
+  }
+
+  function isBetweenDates (date, from, to, opts = {}) {
+    const
+      d1 = getDateIdentifier(from, opts.onlyDate),
+      d2 = getDateIdentifier(to, opts.onlyDate),
+      cur = getDateIdentifier(date, opts.onlyDate);
+
+    return (cur > d1 || (opts.inclusiveFrom === true && cur === d1)) &&
+      (cur < d2 || (opts.inclusiveTo === true && cur === d2))
+  }
+
+  function addToDate (date, mod) {
+    return getChange(date, mod, true)
+  }
+  function subtractFromDate (date, mod) {
+    return getChange(date, mod, false)
+  }
+
+  function adjustDate (date, mod, utc) {
+    const
+      t = new Date(date),
+      prefix = `set${utc === true ? 'UTC' : ''}`;
+
+    Object.keys(mod).forEach(key => {
+      if (key === 'month') {
+        setMonth(t, mod.month);
+        return
+      }
+
+      const op = key === 'year'
+        ? 'FullYear'
+        : key.charAt(0).toUpperCase() + key.slice(1);
+      t[`${prefix}${op}`](mod[key]);
+    });
+
+    return t
+  }
+
   function startOfDate (date, unit, utc) {
     const
       t = new Date(date),
@@ -19512,6 +19976,44 @@
       case 'second':
         t[`${prefix}Milliseconds`](0);
     }
+    return t
+  }
+
+  function endOfDate (date, unit, utc) {
+    const
+      t = new Date(date),
+      prefix = `set${utc === true ? 'UTC' : ''}`;
+
+    switch (unit) {
+      case 'year':
+        t[`${prefix}Month`](11);
+      case 'month':
+        t[`${prefix}Date`](daysInMonth(t));
+      case 'day':
+        t[`${prefix}Hours`](23);
+      case 'hour':
+        t[`${prefix}Minutes`](59);
+      case 'minute':
+        t[`${prefix}Seconds`](59);
+      case 'second':
+        t[`${prefix}Milliseconds`](999);
+    }
+    return t
+  }
+
+  function getMaxDate (date /* , ...args */) {
+    let t = new Date(date);
+    Array.prototype.slice.call(arguments, 1).forEach(d => {
+      t = Math.max(t, new Date(d));
+    });
+    return t
+  }
+
+  function getMinDate (date /*, ...args */) {
+    let t = new Date(date);
+    Array.prototype.slice.call(arguments, 1).forEach(d => {
+      t = Math.min(t, new Date(d));
+    });
     return t
   }
 
@@ -19550,6 +20052,78 @@
 
   function getDayOfYear (date) {
     return getDateDiff(date, startOfDate(date, 'year'), 'days') + 1
+  }
+
+  function inferDateFormat (date) {
+    return isDate(date) === true
+      ? 'date'
+      : (typeof date === 'number' ? 'number' : 'string')
+  }
+
+  function getDateBetween (date, min, max) {
+    const t = new Date(date);
+
+    if (min) {
+      const low = new Date(min);
+      if (t < low) {
+        return low
+      }
+    }
+
+    if (max) {
+      const high = new Date(max);
+      if (t > high) {
+        return high
+      }
+    }
+
+    return t
+  }
+
+  function isSameDate (date, date2, unit) {
+    const
+      t = new Date(date),
+      d = new Date(date2);
+
+    if (unit === void 0) {
+      return t.getTime() === d.getTime()
+    }
+
+    switch (unit) {
+      case 'second':
+        if (t.getSeconds() !== d.getSeconds()) {
+          return false
+        }
+      case 'minute': // intentional fall-through
+        if (t.getMinutes() !== d.getMinutes()) {
+          return false
+        }
+      case 'hour': // intentional fall-through
+        if (t.getHours() !== d.getHours()) {
+          return false
+        }
+      case 'day': // intentional fall-through
+        if (t.getDate() !== d.getDate()) {
+          return false
+        }
+      case 'month': // intentional fall-through
+        if (t.getMonth() !== d.getMonth()) {
+          return false
+        }
+      case 'year': // intentional fall-through
+        if (t.getFullYear() !== d.getFullYear()) {
+          return false
+        }
+        break
+      default:
+        throw new Error(`date isSameDate unknown unit ${unit}`)
+    }
+
+    return true
+  }
+
+  function daysInMonth (date) {
+    return (new Date(date.getFullYear(), date.getMonth() + 1, 0)).getDate()
   }
 
   function getOrdinal (n) {
@@ -19808,6 +20382,36 @@
         : (text === void 0 ? match : text.split('\\]').join(']'))
     )
   }
+
+  function clone$1 (date) {
+    return isDate(date) === true
+      ? new Date(date.getTime())
+      : date
+  }
+
+  var date = {
+    isValid,
+    extractDate,
+    buildDate,
+    getDayOfWeek,
+    getWeekOfYear,
+    isBetweenDates,
+    addToDate,
+    subtractFromDate,
+    adjustDate,
+    startOfDate,
+    endOfDate,
+    getMaxDate,
+    getMinDate,
+    getDateDiff,
+    getDayOfYear,
+    inferDateFormat,
+    getDateBetween,
+    isSameDate,
+    daysInMonth,
+    formatDate,
+    clone: clone$1
+  };
 
   const yearsInterval = 20;
   const views = [ 'Calendar', 'Years', 'Months' ];
@@ -21099,7 +21703,7 @@
 
       __emitImmediately (reason) {
         const date = this.daysModel[0] !== void 0 && this.daysModel[0].dateHash !== null
-          ? this.daysModel[0]
+          ? { ...this.daysModel[0] }
           : { ...this.viewModel }; // inherit day, hours, minutes, milliseconds...
 
         // nextTick required because of animation delay in viewModel
@@ -21542,7 +22146,8 @@
 
     data () {
       return {
-        transitionState: this.showing
+        transitionState: this.showing,
+        animating: false
       }
     },
 
@@ -21569,6 +22174,7 @@
       classes () {
         return `q-dialog__inner--${this.maximized === true ? 'maximized' : 'minimized'} ` +
           `q-dialog__inner--${this.position} ${positionClass$1[this.position]}` +
+          (this.animating === true ? ' q-dialog__inner--animating' : '') +
           (this.fullWidth === true ? ' q-dialog__inner--fullwidth' : '') +
           (this.fullHeight === true ? ' q-dialog__inner--fullheight' : '') +
           (this.square === true ? ' q-dialog__inner--square' : '')
@@ -21617,14 +22223,16 @@
 
     methods: {
       focus () {
-        let node = this.__getInnerNode();
+        addFocusFn(() => {
+          let node = this.__getInnerNode();
 
-        if (node === void 0 || node.contains(document.activeElement) === true) {
-          return
-        }
+          if (node === void 0 || node.contains(document.activeElement) === true) {
+            return
+          }
 
-        node = node.querySelector('[autofocus], [data-autofocus]') || node;
-        node.focus();
+          node = node.querySelector('[autofocus], [data-autofocus]') || node;
+          node.focus();
+        });
       },
 
       shake () {
@@ -21673,6 +22281,7 @@
         });
 
         this.__showPortal();
+        this.animating = true;
 
         if (this.noFocus !== true) {
           // IE can have null document.activeElement
@@ -21706,6 +22315,8 @@
             this.__portal.$el.click();
           }
 
+          this.animating = false;
+          this.__showPortal(true);
           this.$emit('show', evt);
         }, 300);
       },
@@ -21713,6 +22324,7 @@
       __hide (evt) {
         this.__removeHistory();
         this.__cleanup(true);
+        this.animating = true;
 
         // check null for IE
         if (this.__refocusTarget !== void 0 && this.__refocusTarget !== null) {
@@ -21723,6 +22335,7 @@
 
         this.__setTimeout(() => {
           this.__hidePortal();
+          this.animating = false;
           this.$emit('hide', evt);
         }, 300);
       },
@@ -22621,6 +23234,7 @@
         }
 
         this.__setTimeout(() => {
+          this.__showPortal(true);
           this.$emit('show', evt);
         }, 300);
       },
@@ -22677,7 +23291,7 @@
           clearSelection();
           document.body.classList.add('non-selectable');
 
-          const target = getTouchTarget(this.anchorEl);
+          const target = this.anchorEl;
           const evts = ['touchmove', 'touchcancel', 'touchend', 'click']
             .map(e => ([ target, e, '__delayHide', 'passiveCapture' ]));
 
@@ -24146,7 +24760,9 @@
       },
 
       focus () {
-        this.$refs.content !== void 0 && this.$refs.content.focus();
+        addFocusFn(() => {
+          this.$refs.content !== void 0 && this.$refs.content.focus();
+        });
       },
 
       getContentEl () {
@@ -25596,15 +26212,19 @@
 
     methods: {
       focus () {
-        if (this.showPopup !== void 0) {
-          this.showPopup();
-          return
-        }
+        this.focusFn !== void 0 && removeFocusFn(this.focusFn);
+        this.focusFn = addFocusFn(() => {
+          if (this.showPopup !== void 0) {
+            this.showPopup();
+            return
+          }
 
-        this.__focus();
+          this.__focus();
+        });
       },
 
       blur () {
+        this.focusFn !== void 0 && removeFocusFn(this.focusFn);
         const el = document.activeElement;
         // IE can have null document.activeElement
         if (el !== null && this.$el.contains(el)) {
@@ -26291,7 +26911,20 @@
       __addFiles (e, fileList) {
         const files = this.__processFiles(e, fileList, this.innerValue, this.isAppending);
 
-        files !== void 0 && this.__emitValue(
+        // if nothing to do...
+        if (files === void 0) { return }
+
+        // protect against input @change being called in a loop
+        // like it happens on Safari, so don't emit same thing:
+        if (
+          this.multiple === true
+            ? this.value && files.every(f => this.innerValue.includes(f))
+            : this.value === files[ 0 ]
+        ) {
+          return
+        }
+
+        this.__emitValue(
           this.isAppending === true
             ? this.innerValue.concat(files)
             : files
@@ -26321,48 +26954,66 @@
         return this.__getDnd(h, 'file')
       },
 
+      __getFiller (h) {
+        return [
+          h('input', {
+            class: [ this.inputClass, 'q-file__filler' ],
+            style: this.inputStyle,
+            tabindex: -1
+          })
+        ]
+      },
+
       __getSelection (h) {
         if (this.$scopedSlots.file !== void 0) {
-          return this.innerValue.map((file, index) => this.$scopedSlots.file({ index, file, ref: this }))
+          return this.innerValue.length === 0
+            ? this.__getFiller(h)
+            : this.innerValue.map((file, index) => this.$scopedSlots.file({ index, file, ref: this }))
         }
 
         if (this.$scopedSlots.selected !== void 0) {
-          return this.$scopedSlots.selected({ files: this.innerValue, ref: this })
+          return this.innerValue.length === 0
+            ? this.__getFiller(h)
+            : this.$scopedSlots.selected({ files: this.innerValue, ref: this })
         }
 
         if (this.useChips === true) {
-          return this.innerValue.map((file, i) => h(QChip, {
-            key: 'file-' + i,
-            props: {
-              removable: this.editable,
-              dense: true,
-              textColor: this.color,
-              tabindex: this.tabindex
-            },
-            on: cache(this, 'rem#' + i, {
-              remove: () => { this.removeAtIndex(i); }
-            })
-          }, [
-            h('span', {
-              staticClass: 'ellipsis',
-              domProps: {
-                textContent: file.name
-              }
-            })
-          ]))
+          return this.innerValue.length === 0
+            ? this.__getFiller(h)
+            : this.innerValue.map((file, i) => h(QChip, {
+              key: 'file-' + i,
+              props: {
+                removable: this.editable,
+                dense: true,
+                textColor: this.color,
+                tabindex: this.tabindex
+              },
+              on: cache(this, 'rem#' + i, {
+                remove: () => { this.removeAtIndex(i); }
+              })
+            }, [
+              h('span', {
+                staticClass: 'ellipsis',
+                domProps: {
+                  textContent: file.name
+                }
+              })
+            ]))
         }
 
-        return [
-          h('div', {
-            style: this.inputStyle,
-            class: this.inputClass,
-            domProps: {
-              textContent: this.displayValue !== void 0
-                ? this.displayValue
-                : this.selectedString
-            }
-          })
-        ]
+        const textContent = this.displayValue !== void 0
+          ? this.displayValue
+          : this.selectedString;
+
+        return textContent.length > 0
+          ? [
+            h('div', {
+              style: this.inputStyle,
+              class: this.inputClass,
+              domProps: { textContent }
+            })
+          ]
+          : this.__getFiller(h)
       },
 
       __getInput (h) {
@@ -26749,10 +27400,14 @@
       },
 
       focus () {
-        const target = this.$el.querySelector('[autofocus], [data-autofocus]') ||
-          Array.prototype.find.call(this.$el.querySelectorAll('[tabindex]'), el => el.tabIndex > -1);
+        addFocusFn(() => {
+          if (!this.$el) { return }
 
-        target !== null && target !== void 0 && target.focus();
+          const target = this.$el.querySelector('[autofocus], [data-autofocus]') ||
+            Array.prototype.find.call(this.$el.querySelectorAll('[tabindex]'), el => el.tabIndex > -1);
+
+          target !== null && target !== void 0 && target.focus();
+        });
       },
 
       getValidationComponents () {
@@ -27799,7 +28454,11 @@
 
           if (['deleteContentBackward', 'deleteContentForward'].indexOf(inputType) > -1) {
             const cursor = this.reverseFillMask === true
-              ? Math.max(0, masked.length - (masked === this.maskReplaced ? 0 : Math.min(preMasked.length, endReverse) + 1)) + 1
+              ? (
+                end === 0
+                  ? (masked.length > preMasked.length ? 1 : 0)
+                  : Math.max(0, masked.length - (masked === this.maskReplaced ? 0 : Math.min(preMasked.length, endReverse) + 1)) + 1
+              )
               : end;
             inp.setSelectionRange(cursor, cursor, 'forward');
 
@@ -27809,7 +28468,13 @@
           if (this.reverseFillMask === true) {
             if (changed === true) {
               const cursor = Math.max(0, masked.length - (masked === this.maskReplaced ? 0 : Math.min(preMasked.length, endReverse + 1)));
-              this.__moveCursorRightReverse(inp, cursor, cursor);
+
+              if (cursor === 1 && end === 1) {
+                inp.setSelectionRange(cursor, cursor, 'forward');
+              }
+              else {
+                this.__moveCursorRightReverse(inp, cursor, cursor);
+              }
             }
             else {
               const cursor = masked.length - endReverse;
@@ -28027,7 +28692,7 @@
 
         let valIndex = val.length - 1, output = '';
 
-        for (let maskIndex = mask.length - 1; maskIndex >= 0; maskIndex--) {
+        for (let maskIndex = mask.length - 1; maskIndex >= 0 && valIndex > -1; maskIndex--) {
           const maskDef = mask[maskIndex];
 
           let valChar = val[valIndex];
@@ -28248,19 +28913,25 @@
 
     methods: {
       focus () {
-        const el = document.activeElement;
-        if (
-          this.$refs.input !== void 0 &&
-          this.$refs.input !== el &&
-          // IE can have null document.activeElement
-          (el === null || el.id !== this.targetUid)
-        ) {
-          this.$refs.input.focus();
-        }
+        addFocusFn(() => {
+          const el = document.activeElement;
+          if (
+            this.$refs.input !== void 0 &&
+            this.$refs.input !== el &&
+            // IE can have null document.activeElement
+            (el === null || el.id !== this.targetUid)
+          ) {
+            this.$refs.input.focus();
+          }
+        });
       },
 
       select () {
         this.$refs.input !== void 0 && this.$refs.input.select();
+      },
+
+      getNativeElement () {
+        return this.$refs.input
       },
 
       __onPaste (e) {
@@ -28291,13 +28962,15 @@
           this.__emitValue(val);
 
           if (['text', 'search', 'url', 'tel', 'password'].includes(this.type) && e.target === document.activeElement) {
-            const index = e.target.selectionEnd;
+            const { selectionStart, selectionEnd } = e.target;
 
-            index !== void 0 && this.$nextTick(() => {
-              if (e.target === document.activeElement && val.indexOf(e.target.value) === 0) {
-                e.target.setSelectionRange(index, index);
-              }
-            });
+            if (selectionStart !== void 0 && selectionEnd !== void 0) {
+              this.$nextTick(() => {
+                if (e.target === document.activeElement && val.indexOf(e.target.value) === 0) {
+                  e.target.setSelectionRange(selectionStart, selectionEnd);
+                }
+              });
+            }
           }
         }
 
@@ -28563,7 +29236,7 @@
 
     computed: {
       value () {
-        return this.margin !== void 0 || this.threshold !== void 0
+        return this.root !== void 0 || this.margin !== void 0 || this.threshold !== void 0
           ? {
             handler: this.__trigger,
             cfg: {
@@ -30091,7 +30764,7 @@
         },
         set (val) {
           val = parseInt(val, 10);
-          if (this.disable || isNaN(val) || val === 0) {
+          if (this.disable || isNaN(val)) {
             return
           }
           const value = between(val, this.min, this.max);
@@ -30310,27 +30983,39 @@
         };
         if (boundaryStart) {
           const active = this.min === this.value;
+          const btn = {
+            disable: this.disable,
+            flat: !active,
+            label: this.min
+          };
+
+          if (active) {
+            btn.color = this.activeColor || this.color;
+            btn.textColor = this.activeTextColor || this.textColor;
+          }
+
           contentStart.push(this.__getBtn(h, {
             key: 'bns',
             style
-          }, {
-            disable: this.disable,
-            flat: !active,
-            textColor: active ? this.textColor : null,
-            label: this.min
-          }, this.min));
+          }, btn, this.min));
         }
         if (boundaryEnd) {
           const active = this.max === this.value;
+          const btn = {
+            disable: this.disable,
+            flat: !active,
+            label: this.max
+          };
+
+          if (active) {
+            btn.color = this.activeColor || this.color;
+            btn.textColor = this.activeTextColor || this.textColor;
+          }
+
           contentEnd.unshift(this.__getBtn(h, {
             key: 'bne',
             style
-          }, {
-            disable: this.disable,
-            flat: !active,
-            textColor: active ? this.textColor : null,
-            label: this.max
-          }, this.max));
+          }, btn, this.max));
         }
         if (ellipsesStart) {
           contentStart.push(this.__getBtn(h, {
@@ -30900,11 +31585,12 @@
     }
   });
 
-  function width (val, reverse) {
-    if (reverse === true) {
-      return { transform: `translateX(100%) scale3d(${-val},1,1)` }
+  function width (val, reverse, $q) {
+    return {
+      transform: reverse === true
+        ? `translateX(${$q.lang.rtl === true ? '-' : ''}100%) scale3d(${-val},1,1)`
+        : `scale3d(${val},1,1)`
     }
-    return { transform: `scale3d(${val},1,1)` }
   }
 
   var QLinearProgress = Vue.extend({
@@ -30954,7 +31640,7 @@
       },
 
       trackStyle () {
-        return width(this.buffer !== void 0 ? this.buffer : 1, this.reverse)
+        return width(this.buffer !== void 0 ? this.buffer : 1, this.reverse, this.$q)
       },
 
       trackClass () {
@@ -30964,7 +31650,7 @@
       },
 
       modelStyle () {
-        return width(this.motion === true ? 1 : this.value, this.reverse)
+        return width(this.motion === true ? 1 : this.value, this.reverse, this.$q)
       },
 
       modelClasses () {
@@ -30974,6 +31660,10 @@
 
       stripeStyle () {
         return { width: (this.value * 100) + '%' }
+      },
+
+      stripeClass () {
+        return this.reverse === true ? 'absolute-right' : 'absolute-left'
       },
 
       attrs () {
@@ -31003,8 +31693,9 @@
 
       this.stripe === true && this.motion === false && child.push(
         h('div', {
-          staticClass: 'q-linear-progress__stripe absolute-full',
-          style: this.stripeStyle
+          staticClass: 'q-linear-progress__stripe',
+          style: this.stripeStyle,
+          class: this.stripeClass
         })
       );
 
@@ -31133,7 +31824,7 @@
         }
 
         if (event.isFirst === true) {
-          if (getScrollPosition(this.__scrollTarget) !== 0) {
+          if (getScrollPosition(this.__scrollTarget) !== 0 || event.direction !== 'down') {
             if (this.pulling === true) {
               this.pulling = false;
               this.state = 'pull';
@@ -31986,7 +32677,9 @@
         default: null
       },
 
-      horizontal: Boolean
+      horizontal: Boolean,
+
+      tabindex: [String, Number]
     },
 
     data () {
@@ -32087,6 +32780,12 @@
           },
           value: this.__panThumb
         }]
+      },
+
+      scrollAttrs () {
+        if (this.tabindex !== void 0) {
+          return { tabindex: this.tabindex }
+        }
       }
     },
 
@@ -32216,7 +32915,8 @@
       }, [
         h('div', {
           ref: 'target',
-          staticClass: 'scroll relative-position fit hide-scrollbar'
+          staticClass: 'scroll relative-position fit hide-scrollbar',
+          attrs: this.scrollAttrs
         }, [
           h('div', {
             staticClass: 'absolute',
@@ -38000,8 +38700,8 @@
             return slot !== void 0
               ? slot(this.__getBodyCellScope({ key, row, pageIndex, col }))
               : h('td', {
-                class: col.__tdClass,
-                style: col.style
+                class: col.__tdClass(row),
+                style: col.__tdStyle(row)
               }, this.getCellValue(col, row))
           });
 
@@ -38657,6 +39357,12 @@
               : (A === B ? 0 : dir)
           })
         }
+      },
+
+      columnSortOrder: {
+        type: String,
+        validator: v => v === 'ad' || v === 'da',
+        default: 'ad'
       }
     },
 
@@ -38672,24 +39378,46 @@
 
     methods: {
       sort (col /* String(col name) or Object(col definition) */) {
+        let sortOrder = this.columnSortOrder;
+
         if (col === Object(col)) {
+          if (col.sortOrder) {
+            sortOrder = col.sortOrder;
+          }
+
           col = col.name;
+        }
+        else {
+          const def = this.colList.find(def => def.name === col);
+          if (def !== void 0 && def.sortOrder) {
+            sortOrder = def.sortOrder;
+          }
         }
 
         let { sortBy, descending } = this.computedPagination;
 
         if (sortBy !== col) {
           sortBy = col;
-          descending = false;
+          descending = sortOrder === 'da';
         }
         else if (this.binaryStateSort === true) {
           descending = !descending;
         }
         else if (descending === true) {
-          sortBy = null;
+          if (sortOrder === 'ad') {
+            sortBy = null;
+          }
+          else {
+            descending = false;
+          }
         }
-        else {
-          descending = true;
+        else { // ascending
+          if (sortOrder === 'ad') {
+            descending = true;
+          }
+          else {
+            sortBy = null;
+          }
         }
 
         this.setPagination({ sortBy, descending, page: 1 });
@@ -39051,16 +39779,32 @@
 
         return cols.map(col => {
           const align = col.align || 'right';
+          const alignClass = `text-${align}`;
 
           return {
             ...col,
             align,
             __iconClass: `q-table__sort-icon q-table__sort-icon--${align}`,
-            __thClass: `text-${align}` +
+            __thClass: alignClass +
               (col.headerClasses !== void 0 ? ' ' + col.headerClasses : '') +
               (col.sortable === true ? ' sortable' : '') +
               (col.name === sortBy ? ` sorted ${descending === true ? 'sort-desc' : ''}` : ''),
-            __tdClass: `text-${align}${col.classes !== void 0 ? ' ' + col.classes : ''}`
+
+            __tdStyle: col.style !== void 0
+              ? (
+                typeof col.style !== 'function'
+                  ? () => col.style
+                  : col.style
+              )
+              : () => null,
+
+            __tdClass: col.classes !== void 0
+              ? (
+                typeof col.classes !== 'function'
+                  ? () => alignClass + ' ' + col.classes
+                  : row => alignClass + ' ' + col.classes(row)
+              )
+              : () => alignClass
           }
         })
       },
@@ -39489,7 +40233,7 @@
     computed: {
       classes () {
         return 'q-td' + (this.autoWidth === true ? ' q-table--col-auto-width' : '') +
-          (this.noHover === true ? ' q-td--no-hover' : '')
+          (this.noHover === true ? ' q-td--no-hover' : '') + ' '
       }
     },
 
@@ -39511,10 +40255,12 @@
 
       if (col === void 0) { return }
 
+      const row = this.props.row;
+
       return h('td', {
         on,
-        style: col.style,
-        class: this.classes + ' ' + col.__tdClass
+        style: col.__tdStyle(row),
+        class: this.classes + col.__tdClass(row)
       }, slot(this, 'default'))
     }
   });
@@ -41700,9 +42446,9 @@
 
         const files = processedFiles
           .filter(file => this.files.findIndex(f => file.name === f.name) === -1);
-        
+
         if (files === void 0) { return }
-        
+
         const fileInput = this.__getFileInput();
         if (fileInput !== void 0) {
           fileInput.value = '';
@@ -43944,7 +44690,7 @@
 
         touchStart (evt) {
           if (evt.target !== void 0 && typeof ctx.handler === 'function') {
-            const target = getTouchTarget(evt.target);
+            const target = evt.target;
             addEvt(ctx, 'temp', [
               [ target, 'touchmove', 'move', 'passiveCapture' ],
               [ target, 'touchcancel', 'end', 'notPassiveCapture' ],
@@ -44167,7 +44913,7 @@
 
         touchStart (evt) {
           if (evt.target !== void 0 && typeof ctx.handler === 'function') {
-            const target = getTouchTarget(evt.target);
+            const target = evt.target;
             addEvt(ctx, 'temp', [
               [ target, 'touchmove', 'move', 'passiveCapture' ],
               [ target, 'touchcancel', 'end', 'notPassiveCapture' ],
@@ -46533,6 +47279,134 @@
     SessionStorage: SessionStorage
   });
 
+  function fallback (text) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.contentEditable = true;
+    area.style.position = 'fixed'; // avoid scrolling to bottom
+
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+
+    const res = document.execCommand('copy');
+
+    area.remove();
+    return res
+  }
+
+  function copyToClipboard (text) {
+    return navigator.clipboard !== void 0
+      ? navigator.clipboard.writeText(text)
+      : new Promise((resolve, reject) => {
+        const res = fallback(text);
+        if (res) {
+          resolve(true);
+        }
+        else {
+          reject(res);
+        }
+      })
+  }
+
+  function clean (link) {
+    // allow time for iOS
+    setTimeout(() => {
+      window.URL.revokeObjectURL(link.href);
+    }, 10000);
+    link.remove();
+  }
+
+  function exportFile (fileName, rawData, mimeType) {
+    const blob = new Blob([ rawData ], { type: mimeType || 'text/plain' });
+
+    // IE11 has its own stuff...
+    if (window.navigator.msSaveOrOpenBlob) {
+      return window.navigator.msSaveOrOpenBlob(blob, fileName)
+    }
+
+    const link = document.createElement('a');
+
+    link.download = fileName;
+    link.href = window.URL.createObjectURL(blob);
+
+    link.classList.add('hidden');
+    link.style.position = 'fixed'; // avoid scrolling to bottom
+    document.body.appendChild(link);
+
+    try {
+      link.click();
+      clean(link);
+      return true
+    }
+    catch (err) {
+      clean(link);
+      return err
+    }
+  }
+
+  function parseFeatures (winFeatures) {
+    const cfg = Object.assign({ noopener: true }, winFeatures);
+    const feat = [];
+    Object.keys(cfg).forEach(key => {
+      if (cfg[key] === true) {
+        feat.push(key);
+      }
+    });
+    return feat.join(',')
+  }
+
+  function openWindow (url, reject, windowFeatures) {
+    let open = window.open;
+
+    if (Platform.is.cordova === true) {
+      if (cordova !== void 0 && cordova.InAppBrowser !== void 0 && cordova.InAppBrowser.open !== void 0) {
+        open = cordova.InAppBrowser.open;
+      }
+      else if (navigator !== void 0 && navigator.app !== void 0) {
+        return navigator.app.loadUrl(url, {
+          openExternal: true
+        })
+      }
+    }
+    else if (Vue.prototype.$q.electron !== void 0) {
+      return Vue.prototype.$q.electron.shell.openExternal(url)
+    }
+
+    const win = open(url, '_blank', parseFeatures(windowFeatures));
+
+    if (win) {
+      Platform.is.desktop && win.focus();
+      return win
+    }
+    else {
+      reject && reject();
+    }
+  }
+
+  var openUrl = (url, reject, windowFeatures) => {
+    if (
+      Platform.is.ios === true &&
+      window.SafariViewController !== void 0
+    ) {
+      window.SafariViewController.isAvailable(available => {
+        if (available) {
+          window.SafariViewController.show(
+            { url },
+            noop,
+            reject
+          );
+        }
+        else {
+          openWindow(url, reject, windowFeatures);
+        }
+      });
+      return
+    }
+
+    return openWindow(url, reject, windowFeatures)
+  };
+
   var Quasar = {
     ...VuePlugin,
     install (Vue, opts) {
@@ -46545,7 +47419,180 @@
     }
   };
 
-  const { Dark, QSpinnerGears } = require('quasar');
+  var index_esm = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    'default': Quasar,
+    QAjaxBar: QAjaxBar,
+    QAvatar: QAvatar,
+    QBadge: QBadge,
+    QBanner: QBanner,
+    QBar: QBar,
+    QBreadcrumbs: QBreadcrumbs,
+    QBreadcrumbsEl: QBreadcrumbsEl,
+    QBtn: QBtn,
+    QBtnDropdown: QBtnDropdown,
+    QBtnGroup: QBtnGroup,
+    QBtnToggle: QBtnToggle,
+    QCard: QCard,
+    QCardSection: QCardSection,
+    QCardActions: QCardActions,
+    QCarousel: QCarousel,
+    QCarouselSlide: QCarouselSlide,
+    QCarouselControl: QCarouselControl,
+    QChatMessage: QChatMessage,
+    QCheckbox: QCheckbox,
+    QChip: QChip,
+    QCircularProgress: QCircularProgress,
+    QColor: QColor,
+    QDate: QDate,
+    QDialog: QDialog,
+    QDrawer: QDrawer,
+    QEditor: QEditor,
+    QExpansionItem: QExpansionItem,
+    QFab: QFab,
+    QFabAction: QFabAction,
+    QField: QField,
+    QFile: QFile,
+    QFooter: QFooter,
+    QForm: QForm,
+    QHeader: QHeader,
+    QIcon: QIcon,
+    QImg: QImg,
+    QInfiniteScroll: QInfiniteScroll,
+    QInnerLoading: QInnerLoading,
+    QInput: QInput,
+    QIntersection: QIntersection,
+    QList: QList,
+    QItem: QItem,
+    QItemSection: QItemSection,
+    QItemLabel: QItemLabel,
+    QKnob: QKnob,
+    QLayout: QLayout,
+    QMarkupTable: QMarkupTable,
+    QMenu: QMenu,
+    QNoSsr: QNoSsr,
+    QOptionGroup: QOptionGroup,
+    QPage: QPage,
+    QPageContainer: QPageContainer,
+    QPageScroller: QPageScroller,
+    QPageSticky: QPageSticky,
+    QPagination: QPagination,
+    QParallax: QParallax,
+    QPopupEdit: QPopupEdit,
+    QPopupProxy: QPopupProxy,
+    QLinearProgress: QLinearProgress,
+    QPullToRefresh: QPullToRefresh,
+    QRadio: QRadio,
+    QRange: QRange,
+    QRating: QRating,
+    QResizeObserver: QResizeObserver,
+    QResponsive: QResponsive,
+    QScrollArea: QScrollArea,
+    QScrollObserver: QScrollObserver,
+    QSelect: QSelect,
+    QSeparator: QSeparator,
+    QSkeleton: QSkeleton,
+    QSlideItem: QSlideItem,
+    QSlideTransition: QSlideTransition,
+    QSlider: QSlider,
+    QSpace: QSpace,
+    QSpinner: QSpinner,
+    QSpinnerAudio: QSpinnerAudio,
+    QSpinnerBall: QSpinnerBall,
+    QSpinnerBars: QSpinnerBars,
+    QSpinnerBox: QSpinnerBox,
+    QSpinnerClock: QSpinnerClock,
+    QSpinnerComment: QSpinnerComment,
+    QSpinnerCube: QSpinnerCube,
+    QSpinnerDots: QSpinnerDots,
+    QSpinnerFacebook: QSpinnerFacebook,
+    QSpinnerGears: QSpinnerGears$1,
+    QSpinnerGrid: QSpinnerGrid,
+    QSpinnerHearts: QSpinnerHearts,
+    QSpinnerHourglass: QSpinnerHourglass,
+    QSpinnerInfinity: QSpinnerInfinity,
+    QSpinnerIos: QSpinnerIos,
+    QSpinnerOrbit: QSpinnerOrbit,
+    QSpinnerOval: QSpinnerOval,
+    QSpinnerPie: QSpinnerPie,
+    QSpinnerPuff: QSpinnerPuff,
+    QSpinnerRadio: QSpinnerRadio,
+    QSpinnerRings: QSpinnerRings,
+    QSpinnerTail: QSpinnerTail,
+    QSplitter: QSplitter,
+    QStep: QStep,
+    QStepper: QStepper,
+    QStepperNavigation: QStepperNavigation,
+    QTabPanels: QTabPanels,
+    QTabPanel: QTabPanel,
+    QTable: QTable,
+    QTh: QTh,
+    QTr: QTr,
+    QTd: QTd,
+    QTabs: QTabs,
+    QTab: QTab,
+    QRouteTab: QRouteTab,
+    QTime: QTime,
+    QTimeline: QTimeline,
+    QTimelineEntry: QTimelineEntry,
+    QToggle: QToggle,
+    QToolbar: QToolbar,
+    QToolbarTitle: QToolbarTitle,
+    QTooltip: QTooltip,
+    QTree: QTree,
+    QUploader: QUploader,
+    QUploaderBase: QUploaderBase,
+    QUploaderAddTrigger: QUploaderAddTrigger,
+    QVideo: QVideo,
+    QVirtualScroll: QVirtualScroll,
+    ClosePopup: ClosePopup,
+    GoBack: GoBack,
+    Intersection: Intersection,
+    Morph: Morph,
+    Mutation: Mutation,
+    Ripple: Ripple,
+    ScrollFire: ScrollFire,
+    Scroll: Scroll,
+    TouchHold: TouchHold,
+    TouchPan: TouchPan,
+    TouchRepeat: TouchRepeat,
+    TouchSwipe: TouchSwipe,
+    AddressbarColor: AddressbarColor,
+    AppFullscreen: AppFullscreen,
+    AppVisibility: AppVisibility,
+    BottomSheet: BottomSheet,
+    Cookies: Cookies,
+    Dark: Dark$1,
+    Dialog: Dialog,
+    LoadingBar: LoadingBar,
+    Loading: Loading,
+    Meta: Meta,
+    Notify: Notify,
+    Platform: Platform,
+    Screen: Screen,
+    LocalStorage: LocalStorage,
+    SessionStorage: SessionStorage,
+    clone: clone,
+    colors: colors,
+    copyToClipboard: copyToClipboard,
+    date: date,
+    debounce: debounce,
+    dom: dom,
+    event: event,
+    exportFile: exportFile,
+    extend: extend,
+    format: format,
+    frameDebounce: frameDebounce,
+    noop: noop,
+    openURL: openUrl,
+    morph: morph,
+    patterns: patterns,
+    scroll: scroll,
+    throttle: throttle,
+    uid: uid$2
+  });
+
+  const { Dark, QSpinnerGears } = Promise.resolve().then(function () { return index_esm; });
   const color = Dark.isActive ? 'accent' : 'primary';
   ({
       title: 'Loading ...',
