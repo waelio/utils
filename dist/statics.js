@@ -1,8 +1,8 @@
 import { Dark, QSpinnerGears } from 'quasar';
-const color = Dark.isActive ? 'accent' : 'primary';
+const color = Dark && Dark.isActive ? 'accent' : 'primary';
 const dialogDefaults = {
     title: 'Loading ...',
-    dark: Dark.isActive,
+    dark: Dark && Dark.isActive || false,
     message: '0%',
     progress: {
       spinner: QSpinnerGears,

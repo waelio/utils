@@ -46804,10 +46804,10 @@
     }
   };
 
-  const color = Dark.isActive ? 'accent' : 'primary';
+  const color = Dark && Dark.isActive ? 'accent' : 'primary';
   ({
       title: 'Loading ...',
-      dark: Dark.isActive,
+      dark: Dark && Dark.isActive || false,
       message: '0%',
       progress: {
         spinner: QSpinnerGears,
