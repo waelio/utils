@@ -1,1 +1,0 @@
-{"version":3,"file":"store.ejs","sources":["../src/store.js"],"sourcesContent":["var store2 = require('store2')\r\n\r\nexport { store2 }\r\nexport default store2\r\n"],"names":[],"mappings":"AAAG,IAAC,MAAM,GAAG,OAAO,CAAC,QAAQ;;;;;"}

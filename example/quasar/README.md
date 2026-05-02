@@ -1,26 +1,23 @@
-# Quasar App (utils)
+# Quasar example
 
-A Quasar Framework app
+This example now uses **Vue 3 + Vite + Quasar 2** and consumes the local package via `file:../..`.
 
-## Install the dependencies
+## Install
+
 ```bash
 npm install
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+## Run the dev server
+
 ```bash
-quasar dev
+npm run dev
 ```
 
-### Lint the files
+## Build for production
+
 ```bash
-npm run lint
+npm run build
 ```
 
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.conf.js](https://v1.quasar.dev/quasar-cli/quasar-conf-js).
+The entry point is `src/main.js`, where Quasar is installed and `configureNote(...)` is wired to the local `@waelio/utils` checkout.

@@ -1,36 +1,9 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "src/*": [
-        "src/*"
-      ],
-      "app/*": [
-        "*"
-      ],
-      "components/*": [
-        "src/components/*"
-      ],
-      "layouts/*": [
-        "src/layouts/*"
-      ],
-      "pages/*": [
-        "src/pages/*"
-      ],
-      "assets/*": [
-        "src/assets/*"
-      ],
-      "boot/*": [
-        "src/boot/*"
-      ],
-      "vue$": [
-        "node_modules/vue/dist/vue.esm.js"
-      ]
-    }
+    "ignoreDeprecations": "6.0",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022"
   },
-  "exclude": [
-    "dist",
-    ".quasar",
-    "node_modules"
-  ]
+  "exclude": ["dist", "node_modules"]
 }

@@ -1,2 +1,1 @@
-import { storage } from './config'
-export { storage }
+export { storage } from "./config";

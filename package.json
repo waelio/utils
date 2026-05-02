@@ -1,43 +1,84 @@
 {
   "name": "@waelio/utils",
-  "version": "3.1.8",
-  "description": "Javascript Utilities",
-  "main": "dist/utils",
-  "files": [
-    "dist/config/client.js",
-    "dist/config/dev.js",
-    "dist/config/prod.js",
-    "dist/config/server.js",
-    "dist/conf.ejs",
-    "dist/conf.ejs.map",
-    "dist/conf.js",
-    "dist/conf.js.map",
-    "dist/config.ejs",
-    "dist/config.ejs.map",
-    "dist/config.js",
-    "dist/config.js.map",
-    "dist/statics.js",
-    "dist/note.ejs",
-    "dist/note.ejs.map",
-    "dist/note.js",
-    "dist/note.js.map",
-    "dist/store.ejs",
-    "dist/store.ejs.map",
-    "dist/store.js",
-    "dist/store.js.map",
-    "dist/utils.js",
-    "dist/utils.js.map",
-    "dist/utils.ejs",
-    "dist/utils.ejs.map"
-  ],
-  "directories": {
-    "config": "dist/config",
-    "dist": "dist"
+  "version": "4.0.0",
+  "description": "Utilities for configuration, storage, and optional Quasar-powered notifications",
+  "main": "dist/utils.js",
+  "module": "dist/utils.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.js",
+      "default": "./dist/utils.js"
+    },
+    "./config": {
+      "import": "./dist/config.mjs",
+      "require": "./dist/config.js",
+      "default": "./dist/config.js"
+    },
+    "./conf": {
+      "import": "./dist/conf.mjs",
+      "require": "./dist/conf.js",
+      "default": "./dist/conf.js"
+    },
+    "./note": {
+      "import": "./dist/note.mjs",
+      "require": "./dist/note.js",
+      "default": "./dist/note.js"
+    },
+    "./storage": {
+      "import": "./dist/storage.mjs",
+      "require": "./dist/storage.js",
+      "default": "./dist/storage.js"
+    },
+    "./store": {
+      "import": "./dist/store.mjs",
+      "require": "./dist/store.js",
+      "default": "./dist/store.js"
+    },
+    "./dist/config": {
+      "import": "./dist/config.mjs",
+      "require": "./dist/config.js",
+      "default": "./dist/config.js"
+    },
+    "./dist/conf": {
+      "import": "./dist/conf.mjs",
+      "require": "./dist/conf.js",
+      "default": "./dist/conf.js"
+    },
+    "./dist/note": {
+      "import": "./dist/note.mjs",
+      "require": "./dist/note.js",
+      "default": "./dist/note.js"
+    },
+    "./dist/storage": {
+      "import": "./dist/storage.mjs",
+      "require": "./dist/storage.js",
+      "default": "./dist/storage.js"
+    },
+    "./dist/store": {
+      "import": "./dist/store.mjs",
+      "require": "./dist/store.js",
+      "default": "./dist/store.js"
+    },
+    "./dist/utils": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.js",
+      "default": "./dist/utils.js"
+    },
+    "./dist/*.js": "./dist/*.js",
+    "./dist/*.mjs": "./dist/*.mjs",
+    "./dist/*.map": "./dist/*.map",
+    "./dist/*.ejs": "./dist/*.mjs",
+    "./package.json": "./package.json"
   },
-  "public": "true",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "start": "rollup -c",
-    "test": "jasmine"
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && rollup -c",
+    "start": "npm run build",
+    "test": "npm run build && jasmine",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -50,7 +91,8 @@
     "browser",
     "config",
     "store",
-    "notification"
+    "notification",
+    "quasar"
   ],
   "author": "Wael Wahbeh <wahbehw@gmail.com> (https://waelio.com/)",
   "license": "MIT",
@@ -58,22 +100,17 @@
     "url": "https://github.com/waelio/utils/issues"
   },
   "homepage": "https://github.com/waelio/utils#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
-    "@quasar/app": "^3.0.0",
-    "@rollup/plugin-auto-install": "^2.1.0",
-    "@rollup/plugin-commonjs": "^18.1.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
-    "font-awesome": "^4.7.0",
-    "jasmine": "^3.7.0",
-    "rollup": "^2.43.0",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-node-polyfills": "^0.2.1",
-    "the-answer": "^1.0.0"
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "jasmine": "^6.2.0",
+    "rollup": "^4.60.2"
   },
   "dependencies": {
-    "quasar": "^1.15.21",
-    "store2": "^2.12.0",
-    "vue": "^2.6.12"
+    "store2": "^2.14.4"
   }
 }

@@ -1,7 +1,8 @@
-import store from './store'
-import { config, storage } from './config'
-import { conf } from './conf'
-import { note, Notify } from './note'
+import store from "./store";
+import { config, storage } from "./config";
+import { conf } from "./conf";
+import { note, Notify, configureNote } from "./note";
+
 const Utils = {
   Store: store,
   Config: config,
@@ -12,7 +13,8 @@ const Utils = {
   storage,
   note,
   Notify,
-  conf
-}
+  configureNote,
+  conf,
+};
 
-export { store, config, conf, storage, note, Notify, Utils }
+export { store, config, conf, storage, note, Notify, configureNote, Utils };

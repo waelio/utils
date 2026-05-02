@@ -1,34 +1,51 @@
-const { store, config, note, Notify } = require('../src')
+const { store, config, conf, storage } = require("../dist/utils.js");
 
-describe('Store Plugin', () => {
-  it('should store data', () => {
-    store('test', 'testValue')
-    const test = store('test')
-    expect(test).toEqual('testValue')
-  })
-})
+describe("Store utility", () => {
+  it("stores and reads values", () => {
+    const key = `store:${Date.now()}`;
 
-describe('Config Plugin', () => {
-  it('should save data', () => {
-    config.set('test', 'testValue')
-    const test = config.get('test')
-    expect(test).toEqual('testValue')
-  })
-})
+    store(key, "testValue");
 
-describe('Note Plugin', () => {
-  it('should display message', () => {
-    let test
-    try {
-      test = null
-      note.success('Test')
-      note.info('Test')
-      note.warning('Test')
-      note.error('Test')
-      note.log('Test')
-    } catch (e) {
-      test = e
-    }
-    expect(test).toEqual(null)
-  })
-})
+    expect(store(key)).toEqual("testValue");
+
+    store.remove(key);
+  });
+});
+
+describe("Config utility", () => {
+  it("saves flat values", () => {
+    const key = `config:${Date.now()}`;
+
+    config.set(key, "testValue");
+
+    expect(config.get(key)).toEqual("testValue");
+  });
+
+  it("supports nested keys", () => {
+    const namespace = `nested:${Date.now()}`;
+
+    config.set(`${namespace}:enabled`, true);
+
+    expect(config.get(`${namespace}:enabled`)).toBeTrue();
+  });
+
+  it("exposes namespaced storage helpers", () => {
+    const key = `storage:${Date.now()}`;
+
+    storage.set(key, "stored");
+
+    expect(storage.get(key)).toEqual("stored");
+
+    storage.remove(key);
+  });
+});
+
+describe("Conf utility", () => {
+  it("mirrors config behaviour without storage", () => {
+    const key = `conf:${Date.now()}`;
+
+    conf.set(`${key}:api`, "/health");
+
+    expect(conf.get(`${key}:api`)).toEqual("/health");
+  });
+});
