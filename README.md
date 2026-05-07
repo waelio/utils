@@ -5,11 +5,12 @@
 [![NPM monthly downloads](https://img.shields.io/npm/dm/@waelio/utils.svg?label=Monthly-Downloads)](https://npmjs.org/package/@waelio/utils)
 [![NPM total downloads](https://img.shields.io/npm/dt/@waelio/utils.svg?label=Total-Download&color=blueviolet)](https://npmjs.org/package/@waelio/utils)
 
-`@waelio/utils` is a small utility library for three common jobs:
+`@waelio/utils` is a small TypeScript-friendly utility package for:
 
-- config and environment defaults
-- namespaced storage powered by `store2`
-- friendly notification helpers with optional Quasar integration
+- environment/config defaults
+- namespaced browser storage powered by `store2`
+- optional Quasar-backed notifications
+- a lightweight `uStore` facade with local, session, cookie, memory, and signal adapters
 
 ## Installation
 
@@ -17,37 +18,128 @@
 npm install @waelio/utils
 ```
 
-or:
+Or:
 
 ```bash
 yarn add @waelio/utils
 ```
 
+Node `>=18` is required.
+
+## What the package exports
+
+The root entry exports:
+
+- `store`
+- `config`
+- `conf`
+- `storage`
+- `note`
+- `Notify`
+- `configureNote`
+- `uStore`
+- `localStorage`
+- `sessionStorage`
+- `cookieStorage`
+- `memoryStorage`
+- `signalStorage`
+- `Utils`
+
+Preferred subpath exports are also available:
+
+- `@waelio/utils/config`
+- `@waelio/utils/conf`
+- `@waelio/utils/note`
+- `@waelio/utils/storage`
+- `@waelio/utils/store`
+- `@waelio/utils/ustore`
+
+Legacy `dist/*` deep imports still work for compatibility, but the subpaths above are the modern path.
+
 ## Recommended imports
 
-Use the new subpath exports for the cleanest setup:
+Use subpaths when you only need one part of the package:
 
 ```ts
 import { config } from "@waelio/utils/config";
 import { conf } from "@waelio/utils/conf";
 import { note, configureNote } from "@waelio/utils/note";
-import { store } from "@waelio/utils/store";
-import { uStore } from "@waelio/utils/ustore";
+import { storage } from "@waelio/utils/storage";
+import store from "@waelio/utils/store";
+import { uStore, signalStorage } from "@waelio/utils/ustore";
 ```
 
-The root entry is still available when you want everything at once:
+Use the root entry when you want everything in one import:
 
 ```ts
-import { Utils } from "@waelio/utils";
+import {
+  Utils,
+  config,
+  note,
+  storage,
+  uStore,
+  signalStorage,
+} from "@waelio/utils";
 
-const { config, note, storage, uStore } = Utils;
+console.log(Utils.Config === config);
+console.log(Utils.Note === note);
+console.log(Utils.Storage === storage);
+console.log(Utils.uStore === uStore);
+console.log(Utils.signalStorage === signalStorage);
 ```
 
-## uStore-style adapters
+## Config helpers
 
-This package now includes a lightweight `uStore` facade inspired by
-[`@waelio/ustore`](https://github.com/waelio/ustore), exposed from both the
-root entry and `@waelio/utils/ustore`.
+There are two config instances:
+
+- `config` — backed by the package storage namespace
+- `conf` — a plain config instance without the namespaced storage binding
+
+Nested keys use `:` separators.
+
+```ts
+import { config } from "@waelio/utils/config";
+import { conf } from "@waelio/utils/conf";
+
+config.set("dev:api", "https://api.example.com");
+config.set("credentials:token", "secret-token");
+
+console.log(config.get("dev:api"));
+console.log(config.get("credentials:token"));
+console.log(config.has("credentials:token"));
+
+conf.set("featureFlags:newCheckout", true);
+console.log(conf.get("featureFlags:newCheckout"));
+```
+
+If you want direct access to the underlying namespaced storage instance:
+
+```ts
+import { storage } from "@waelio/utils/storage";
+
+storage.set("theme", "dark");
+console.log(storage.get("theme"));
+```
+
+## Store wrapper
+
+`@waelio/utils/store` exposes the `store2` API as a default export.
+
+```ts
+import store from "@waelio/utils/store";
+
+store("theme", "dark");
+console.log(store("theme"));
+
+const accountStore = store.namespace("account");
+accountStore.set("id", "42");
+console.log(accountStore.get("id"));
+```
+
+## uStore adapters
+
+The package includes a lightweight `uStore` facade inspired by
+[`@waelio/ustore`](https://github.com/waelio/ustore).
 
 Available adapters:
 
@@ -58,7 +150,15 @@ Available adapters:
 - `uStore.memory`
 - `uStore.signal`
 
-The `signal` adapter also supports subscriptions for simple reactive state.
+The same adapters are also exported individually from the root entry and `@waelio/utils/ustore`:
+
+- `localStorage`
+- `sessionStorage`
+- `cookieStorage`
+- `memoryStorage`
+- `signalStorage`
+
+### Basic usage
 
 ```ts
 import { uStore } from "@waelio/utils/ustore";
@@ -66,21 +166,62 @@ import { uStore } from "@waelio/utils/ustore";
 uStore.local.set("theme", "dark");
 console.log(uStore.local.get("theme"));
 
-const stop = uStore.signal.subscribe("theme", (value, change) => {
-  console.log("theme changed:", value, change.previousValue);
+uStore.session.set("step", 2);
+console.log(uStore.session.has("step"));
+
+uStore.cookie.set("bannerDismissed", true);
+console.log(uStore.cookie.get("bannerDismissed"));
+
+uStore.memory.set("draft", { title: "Hello" });
+console.log(uStore.memory.get("draft"));
+```
+
+### Reactive signal storage
+
+```ts
+import { signalStorage } from "@waelio/utils/ustore";
+
+const stop = signalStorage.subscribe("theme", (value, change) => {
+  console.log("theme changed", {
+    value,
+    previousValue: change.previousValue,
+    source: change.source,
+  });
 });
 
-uStore.signal.set("theme", "light");
+signalStorage.set("theme", "light");
+signalStorage.remove("theme");
+
+console.log(signalStorage.snapshot());
+
 stop();
 ```
 
-Legacy `dist/*` deep imports remain exported for compatibility, but the new subpaths are preferred.
+## Notification helper
+
+`note` works with or without Quasar.
+
+Without Quasar, methods return safe payload objects instead of throwing.
+
+```ts
+import { note } from "@waelio/utils/note";
+
+note.success("Saved successfully");
+note.info("Heads up");
+note.warning("Double-check this");
+note.error(new Error("Something exploded politely"));
+
+note.loading.start({ message: "Saving..." });
+note.loading.stop();
+
+note.dialog({ title: "Delete item", message: "Are you sure?" });
+```
 
 ## Quasar integration
 
-Version 4 no longer auto-installs Quasar or Vue for you. That old magic was convenient, but also very 2021.
+Version 4+ does not auto-install Quasar or Vue for you.
 
-Instead, install Quasar in your app and wire the helper once:
+If your app uses Quasar, wire the adapters once during startup:
 
 ```ts
 import { createApp } from "vue";
@@ -119,45 +260,13 @@ configureNote({
 app.mount("#app");
 ```
 
-After that, the notification helper can use Quasar where available and safely fall back to plain payload objects elsewhere.
-
-## Quick examples
-
-### Config
-
-```ts
-import { config } from "@waelio/utils/config";
-
-config.set("dev:api", "http://localhost:3000");
-config.set("credentials:token", "secret-token");
-
-console.log(config.get("dev:api"));
-console.log(config.get("credentials:token"));
-```
-
-### Store
-
-```ts
-import store from "@waelio/utils/store";
-
-store("theme", "dark");
-console.log(store("theme"));
-```
-
-### Note
-
-```ts
-import { note } from "@waelio/utils/note";
-
-note.success("Saved successfully");
-note.info("Heads up");
-note.warning("Double-check this");
-note.error(new Error("Something exploded politely"));
-```
+After that, `note.success(...)`, `note.dialog(...)`, and `note.loading.start(...)` can delegate to Quasar when available.
 
 ## Standalone / UMD
 
-If you use the UMD bundle directly, load Quasar first if you want real UI notifications:
+The package still ships UMD bundles in `dist/`.
+
+If you load the browser bundle directly, load Quasar first when you want real UI notifications:
 
 ```html
 <link
@@ -174,23 +283,35 @@ If you use the UMD bundle directly, load Quasar first if you want real UI notifi
 </script>
 ```
 
-Without Quasar, `note.*` methods still return safe payloads and do not throw.
-
 ## Local examples
 
-This repository includes two Vite-based examples:
+This repository includes two example apps that depend on the local checkout via `file:../..`:
 
-- `example/vue` — a plain Vue 3 app using the library and Quasar plugins
-- `example/quasar` — a Quasar-flavoured Vue 3 app using the same library helpers
+- `example/vue` — Vue 3 + Vite + Quasar
+- `example/quasar` — Quasar-flavoured Vue 3 + Vite example
 
-Both examples point to the local package with a `file:../..` dependency so they always exercise the current checkout.
+Run either one like this:
+
+```bash
+cd example/vue
+npm install
+npm run dev
+```
+
+Or:
+
+```bash
+cd example/quasar
+npm install
+npm run dev
+```
 
 ## Migrating from v3
 
-- Vue 2 / Quasar 1 auto-registration has been removed
-- call `configureNote(...)` in apps that want Quasar-backed notifications
-- preferred imports are now `@waelio/utils/config`, `@waelio/utils/note`, and friends
-- the repository examples now use Vite instead of Vue CLI / legacy Quasar CLI scaffolding
+- Vue 2 / Quasar 1 auto-registration is gone
+- Quasar-backed notifications now require an explicit `configureNote(...)` call
+- subpath imports are preferred over legacy deep imports
+- the package source and distributed typings are now TypeScript-based
 
 ## Support
 
