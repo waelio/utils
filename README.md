@@ -27,19 +27,51 @@ yarn add @waelio/utils
 
 Use the new subpath exports for the cleanest setup:
 
-```js
-import { config } from '@waelio/utils/config'
-import { conf } from '@waelio/utils/conf'
-import { note, configureNote } from '@waelio/utils/note'
-import { store } from '@waelio/utils/store'
+```ts
+import { config } from "@waelio/utils/config";
+import { conf } from "@waelio/utils/conf";
+import { note, configureNote } from "@waelio/utils/note";
+import { store } from "@waelio/utils/store";
+import { uStore } from "@waelio/utils/ustore";
 ```
 
 The root entry is still available when you want everything at once:
 
-```js
-import { Utils } from '@waelio/utils'
+```ts
+import { Utils } from "@waelio/utils";
 
-const { config, note, storage } = Utils
+const { config, note, storage, uStore } = Utils;
+```
+
+## uStore-style adapters
+
+This package now includes a lightweight `uStore` facade inspired by
+[`@waelio/ustore`](https://github.com/waelio/ustore), exposed from both the
+root entry and `@waelio/utils/ustore`.
+
+Available adapters:
+
+- `uStore.config`
+- `uStore.local`
+- `uStore.session`
+- `uStore.cookie`
+- `uStore.memory`
+- `uStore.signal`
+
+The `signal` adapter also supports subscriptions for simple reactive state.
+
+```ts
+import { uStore } from "@waelio/utils/ustore";
+
+uStore.local.set("theme", "dark");
+console.log(uStore.local.get("theme"));
+
+const stop = uStore.signal.subscribe("theme", (value, change) => {
+  console.log("theme changed:", value, change.previousValue);
+});
+
+uStore.signal.set("theme", "light");
+stop();
 ```
 
 Legacy `dist/*` deep imports remain exported for compatibility, but the new subpaths are preferred.
@@ -50,8 +82,8 @@ Version 4 no longer auto-installs Quasar or Vue for you. That old magic was conv
 
 Instead, install Quasar in your app and wire the helper once:
 
-```js
-import { createApp } from 'vue'
+```ts
+import { createApp } from "vue";
 import {
   Dark,
   Dialog,
@@ -59,21 +91,21 @@ import {
   LoadingBar,
   Notify,
   QSpinnerGears,
-  Quasar
-} from 'quasar'
-import { configureNote } from '@waelio/utils/note'
-import App from './App.vue'
+  Quasar,
+} from "quasar";
+import { configureNote } from "@waelio/utils/note";
+import App from "./App.vue";
 
-const app = createApp(App)
+const app = createApp(App);
 
 app.use(Quasar, {
   plugins: {
     Notify,
     Dialog,
     Loading,
-    LoadingBar
-  }
-})
+    LoadingBar,
+  },
+});
 
 configureNote({
   Notify,
@@ -81,10 +113,10 @@ configureNote({
   Loading,
   LoadingBar,
   Dark,
-  QSpinnerGears
-})
+  QSpinnerGears,
+});
 
-app.mount('#app')
+app.mount("#app");
 ```
 
 After that, the notification helper can use Quasar where available and safely fall back to plain payload objects elsewhere.
@@ -93,34 +125,34 @@ After that, the notification helper can use Quasar where available and safely fa
 
 ### Config
 
-```js
-import { config } from '@waelio/utils/config'
+```ts
+import { config } from "@waelio/utils/config";
 
-config.set('dev:api', 'http://localhost:3000')
-config.set('credentials:token', 'secret-token')
+config.set("dev:api", "http://localhost:3000");
+config.set("credentials:token", "secret-token");
 
-console.log(config.get('dev:api'))
-console.log(config.get('credentials:token'))
+console.log(config.get("dev:api"));
+console.log(config.get("credentials:token"));
 ```
 
 ### Store
 
-```js
-import store from '@waelio/utils/store'
+```ts
+import store from "@waelio/utils/store";
 
-store('theme', 'dark')
-console.log(store('theme'))
+store("theme", "dark");
+console.log(store("theme"));
 ```
 
 ### Note
 
-```js
-import { note } from '@waelio/utils/note'
+```ts
+import { note } from "@waelio/utils/note";
 
-note.success('Saved successfully')
-note.info('Heads up')
-note.warning('Double-check this')
-note.error(new Error('Something exploded politely'))
+note.success("Saved successfully");
+note.info("Heads up");
+note.warning("Double-check this");
+note.error(new Error("Something exploded politely"));
 ```
 
 ## Standalone / UMD
@@ -136,8 +168,9 @@ If you use the UMD bundle directly, load Quasar first if you want real UI notifi
 <script src="https://cdn.jsdelivr.net/npm/quasar@2/dist/quasar.umd.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@waelio/utils@latest/dist/utils.js"></script>
 <script>
-  Utils.configureNote(window.Quasar)
-  Utils.note.success('Loaded from CDN')
+  Utils.configureNote(window.Quasar);
+  Utils.note.success("Loaded from CDN");
+  Utils.uStore.local.set("mode", "cdn");
 </script>
 ```
 

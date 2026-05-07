@@ -303,169 +303,143 @@ var store2Exports = requireStore2();
 var store2 = /*@__PURE__*/getDefaultExportFromCjs(store2Exports);
 
 var clientDefaults = {
-  init:false,
-  app: {    
-    businessName: "",
-    businessDomain: "",
-    businessAddress: "",
-    businessEmail: "",
-    businessImage:  "",
-    businessDescription: ""
-  },
-  settings:{
-    locale: "en-us",
-    darkMode: true,
-  },
-  Credentials: {
-    google: {
-      clientId: "",
-      clientPassword: ""
+    init: false,
+    app: {
+        businessName: "",
+        businessDomain: "",
+        businessAddress: "",
+        businessEmail: "",
+        businessImage: "",
+        businessDescription: "",
     },
-    facebook: {
-      clientId: "",
-      clientPassword: ""
+    settings: {
+        locale: "en-us",
+        darkMode: true,
     },
-    apple: {
-      clientId: "",
-      clientPassword: ""
+    Credentials: {
+        google: {
+            clientId: "",
+            clientPassword: "",
+        },
+        facebook: {
+            clientId: "",
+            clientPassword: "",
+        },
+        apple: {
+            clientId: "",
+            clientPassword: "",
+        },
+        twitter: {
+            clientId: "",
+            clientPassword: "",
+        },
     },
-    twitter: {
-      clientId: "",
-      clientPassword: ""
-    }
-  }
 };
 
 var devDefaults = {
-  debug: false,
-  localeName: "locale",
-  modeName: "darkMode",
-  api: "",
-  apiPrefix: "api/v1/",
-  crm: ""
+    debug: false,
+    localeName: "locale",
+    modeName: "darkMode",
+    api: "",
+    apiPrefix: "api/v1/",
+    crm: "",
 };
 
 var prodDefaults = {
-  debug: false,
-  localeName: "locale",
-  modeName: "darkMode",
-  apiPrefix: 'api/v1/',
-  api:""
+    debug: false,
+    localeName: "locale",
+    modeName: "darkMode",
+    apiPrefix: "api/v1/",
+    api: "",
 };
 
 var serverDefaults = {};
 
-const normalizeConfig = (value) => value?.default ?? value ?? {};
-
-const isBrowser = () =>
-  typeof window !== "undefined" && typeof document !== "undefined";
-
-const getUrgentOverrides = () =>
-  normalizeConfig(
-    process.env.NODE_ENV === "production" ? prodDefaults : devDefaults,
-  );
-
-const buildBaseStore = (storage) => {
-  const client = normalizeConfig(clientDefaults);
-  const server = isBrowser() ? {} : normalizeConfig(serverDefaults);
-  const dev = getUrgentOverrides();
-  const store = {
-    ...client,
-    ...server,
-    ...dev,
-    client,
-    server,
-    dev,
-  };
-
-  if (storage) {
-    store.storage = storage;
-  }
-
-  return store;
+const isConfigRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+const normalizeConfig = (value) => {
+    const resolved = isConfigRecord(value) && "default" in value ? value.default : value;
+    return isConfigRecord(resolved) ? resolved : {};
 };
-
+const isBrowser = () => typeof window !== "undefined" && typeof document !== "undefined";
+const getNodeEnv = () => typeof process !== "undefined" ? process.env?.NODE_ENV : undefined;
+const getUrgentOverrides = () => normalizeConfig(getNodeEnv() === "production" ? prodDefaults : devDefaults);
+const buildBaseStore = (storage) => {
+    const client = normalizeConfig(clientDefaults);
+    const server = isBrowser() ? {} : normalizeConfig(serverDefaults);
+    const dev = getUrgentOverrides();
+    const store = {
+        ...client,
+        ...server,
+        ...dev,
+        client,
+        server,
+        dev,
+    };
+    if (storage) {
+        store.storage = storage;
+    }
+    return store;
+};
 class BaseConfig {
-  constructor({ storage } = {}) {
-    this._env = isBrowser() ? "client" : "server";
-    this._storage = storage;
-    this._store = buildBaseStore(storage);
-  }
-
-  set(key, value) {
-    if (key.includes(":")) {
-      const keys = key.split(":");
-      let storeKey = this._store;
-
-      keys.forEach((segment, index) => {
-        if (keys.length === index + 1) {
-          storeKey[segment] = value;
-          return;
-        }
-
-        if (storeKey[segment] === undefined) {
-          storeKey[segment] = {};
-        }
-
-        storeKey = storeKey[segment];
-      });
-
-      return value;
+    constructor({ storage } = {}) {
+        this._env = isBrowser() ? "client" : "server";
+        this._storage = storage;
+        this._store = buildBaseStore(storage);
     }
-
-    this._store[key] = value;
-    return value;
-  }
-
-  getAll() {
-    return this._store;
-  }
-
-  getItem(key) {
-    return this._store[key];
-  }
-
-  get(key) {
-    if (key.includes(":")) {
-      return this.buildNestedKey(key);
+    set(key, value) {
+        if (key.includes(":")) {
+            const keys = key.split(":");
+            let storeKey = this._store;
+            keys.forEach((segment, index) => {
+                if (keys.length === index + 1) {
+                    storeKey[segment] = value;
+                    return;
+                }
+                if (!isConfigRecord(storeKey[segment])) {
+                    storeKey[segment] = {};
+                }
+                storeKey = storeKey[segment];
+            });
+            return value;
+        }
+        this._store[key] = value;
+        return value;
     }
-
-    return this._store[key];
-  }
-
-  client() {
-    return this.getItem("client");
-  }
-
-  dev() {
-    return this.getItem("dev");
-  }
-
-  storage() {
-    return this._store.storage;
-  }
-
-  server() {
-    return this.getItem("server");
-  }
-
-  store() {
-    return this._store;
-  }
-
-  has(key) {
-    return Boolean(this.get(key));
-  }
-
-  buildNestedKey(nestedKey) {
-    return nestedKey
-      .split(":")
-      .reduce(
-        (storeKey, segment) =>
-          storeKey == null ? undefined : storeKey[segment],
-        this._store,
-      );
-  }
+    getAll() {
+        return this._store;
+    }
+    getItem(key) {
+        return this._store[key];
+    }
+    get(key) {
+        if (key.includes(":")) {
+            return this.buildNestedKey(key);
+        }
+        return this._store[key];
+    }
+    client() {
+        return this.getItem("client");
+    }
+    dev() {
+        return this.getItem("dev");
+    }
+    storage() {
+        return this._store.storage;
+    }
+    server() {
+        return this.getItem("server");
+    }
+    store() {
+        return this._store;
+    }
+    has(key) {
+        return Boolean(this.get(key));
+    }
+    buildNestedKey(nestedKey) {
+        return nestedKey
+            .split(":")
+            .reduce((storeKey, segment) => isConfigRecord(storeKey) ? storeKey[segment] : undefined, this._store);
+    }
 }
 
 const storage = store2.namespace("app");
@@ -474,256 +448,664 @@ const config = new BaseConfig({ storage });
 const conf = new BaseConfig();
 
 const dialogDefaults = {
-  title: "Loading ...",
-  dark: false,
-  message: "0%",
-  progress: {
-    color: "primary",
-  },
-  persistent: false,
-  ok: false,
-};
-
-const notifyDefaults = {
-  timeout: 10000,
-  position: "top",
-};
-
-const loadingDefaults = {
-  message: "Processing ...",
-};
-
-const loadingBarDefaults = {
-  color: "amber-7",
-  size: "10px",
-  position: "top",
-};
-
-const defaultStyles = {
-  info: {
-    icon: "info",
-    color: "info",
-    type: "info",
-  },
-  success: {
-    icon: "check_circle",
-    color: "positive",
-    type: "positive",
-  },
-  warning: {
-    icon: "warning",
-    color: "warning",
-    type: "warning",
-  },
-  error: {
-    icon: "error",
-    color: "negative",
-    type: "negative",
-  },
-};
-
-const getGlobalQuasarAdapters = () => {
-  if (typeof globalThis === "undefined" || !globalThis.Quasar) {
-    return {};
-  }
-
-  const { Notify, Dialog, Dark, LoadingBar, Loading, QSpinnerGears } =
-    globalThis.Quasar;
-
-  return {
-    Notify,
-    Dialog,
-    Dark,
-    LoadingBar,
-    Loading,
-    QSpinnerGears,
-  };
-};
-
-let adapters = {
-  Notify: null,
-  Dialog: null,
-  Dark: null,
-  LoadingBar: null,
-  Loading: null,
-  QSpinnerGears: null,
-  ...getGlobalQuasarAdapters(),
-};
-
-const applyDefaults = () => {
-  const { Notify: activeNotify, LoadingBar: activeLoadingBar } = adapters;
-
-  if (typeof activeNotify?.setDefaults === "function") {
-    activeNotify.setDefaults(notifyDefaults);
-  }
-
-  if (typeof activeLoadingBar?.setDefaults === "function") {
-    activeLoadingBar.setDefaults(loadingBarDefaults);
-  }
-};
-
-const syncAdapters = () => {
-  adapters = {
-    ...getGlobalQuasarAdapters(),
-    ...adapters,
-  };
-
-  applyDefaults();
-  return adapters;
-};
-
-const buildLoadingConfig = (config = {}) => {
-  const { QSpinnerGears } = syncAdapters();
-
-  return {
-    ...loadingDefaults,
-    ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
-    ...config,
-  };
-};
-
-const buildDialogConfig = (config = {}) => {
-  const { Dark, QSpinnerGears } = syncAdapters();
-
-  return {
-    ...dialogDefaults,
-    dark:
-      typeof Dark?.isActive === "boolean" ? Dark.isActive : dialogDefaults.dark,
+    title: "Loading ...",
+    dark: false,
+    message: "0%",
     progress: {
-      ...dialogDefaults.progress,
-      ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
-      ...(config.progress || {}),
+        color: "primary",
     },
-    ...config,
-  };
+    persistent: false,
+    ok: false,
+};
+const notifyDefaults = {
+    timeout: 10000,
+    position: "top",
+};
+const loadingDefaults = {
+    message: "Processing ...",
+};
+const loadingBarDefaults = {
+    color: "amber-7",
+    size: "10px",
+    position: "top",
+};
+const defaultStyles = {
+    info: {
+        icon: "info",
+        color: "info",
+        type: "info",
+    },
+    success: {
+        icon: "check_circle",
+        color: "positive",
+        type: "positive",
+    },
+    warning: {
+        icon: "warning",
+        color: "warning",
+        type: "warning",
+    },
+    error: {
+        icon: "error",
+        color: "negative",
+        type: "negative",
+    },
 };
 
-const resolveMessage = (error) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return (
-    error?.message ||
-    error?.response?.data?.message ||
-    error?.response?.data ||
-    error?.response ||
-    "Unknown error"
-  );
-};
-
-const configureNote = (nextAdapters = {}) => {
-  adapters = {
-    ...adapters,
-    ...nextAdapters,
-  };
-
-  syncAdapters();
-  return note;
-};
-
-const Notify = {
-  create(payload) {
-    const { Notify: activeNotify } = syncAdapters();
-
-    if (typeof activeNotify?.create === "function") {
-      return activeNotify.create(payload);
+const isPayload = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+const getGlobalQuasarAdapters = () => {
+    const quasar = globalThis.Quasar;
+    if (!quasar) {
+        return {};
     }
-
-    return payload;
-  },
-  setDefaults(payload) {
-    const { Notify: activeNotify } = syncAdapters();
-
+    const { Notify, Dialog, Dark, LoadingBar, Loading, QSpinnerGears } = quasar;
+    return {
+        Notify,
+        Dialog,
+        Dark,
+        LoadingBar,
+        Loading,
+        QSpinnerGears,
+    };
+};
+let adapters = {
+    Notify: null,
+    Dialog: null,
+    Dark: null,
+    LoadingBar: null,
+    Loading: null,
+    QSpinnerGears: null,
+    ...getGlobalQuasarAdapters(),
+};
+const applyDefaults = () => {
+    const { Notify: activeNotify, LoadingBar: activeLoadingBar } = adapters;
     if (typeof activeNotify?.setDefaults === "function") {
-      return activeNotify.setDefaults(payload);
+        activeNotify.setDefaults(notifyDefaults);
     }
-
-    return payload;
-  },
+    if (typeof activeLoadingBar?.setDefaults === "function") {
+        activeLoadingBar.setDefaults(loadingBarDefaults);
+    }
 };
-
+const syncAdapters = () => {
+    adapters = {
+        ...getGlobalQuasarAdapters(),
+        ...adapters,
+    };
+    applyDefaults();
+    return adapters;
+};
+const buildLoadingConfig = (config = {}) => {
+    const { QSpinnerGears } = syncAdapters();
+    return {
+        ...loadingDefaults,
+        ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
+        ...config,
+    };
+};
+const buildDialogConfig = (config = {}) => {
+    const { Dark, QSpinnerGears } = syncAdapters();
+    const progressConfig = isPayload(config.progress) ? config.progress : {};
+    return {
+        ...dialogDefaults,
+        dark: typeof Dark?.isActive === "boolean" ? Dark.isActive : dialogDefaults.dark,
+        progress: {
+            ...dialogDefaults.progress,
+            ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
+            ...progressConfig,
+        },
+        ...config,
+    };
+};
+const resolveMessage = (error) => {
+    if (typeof error === "string") {
+        return error;
+    }
+    if (!isPayload(error)) {
+        return "Unknown error";
+    }
+    const response = isPayload(error.response) ? error.response : null;
+    const responseData = response?.data;
+    const responseDataRecord = isPayload(responseData) ? responseData : null;
+    return (error.message ||
+        responseDataRecord?.message ||
+        responseData ||
+        response ||
+        "Unknown error");
+};
 const note = {};
-
-note.loading = function (action = "show", config = {}) {
-  const { Loading } = syncAdapters();
-
-  if (action === "show" && typeof Loading?.show === "function") {
-    return Loading.show(buildLoadingConfig(config));
-  }
-
-  if (action === "hide" && typeof Loading?.hide === "function") {
-    return Loading.hide();
-  }
-
-  return { action, ...config };
+const configureNote = (nextAdapters = {}) => {
+    adapters = {
+        ...adapters,
+        ...nextAdapters,
+    };
+    syncAdapters();
+    return note;
 };
-
-note.loading.start = function (config = {}) {
-  return note.loading("show", config);
+const Notify = {
+    create(payload) {
+        const { Notify: activeNotify } = syncAdapters();
+        if (typeof activeNotify?.create === "function") {
+            return activeNotify.create(payload);
+        }
+        return payload;
+    },
+    setDefaults(payload) {
+        const { Notify: activeNotify } = syncAdapters();
+        if (typeof activeNotify?.setDefaults === "function") {
+            return activeNotify.setDefaults(payload);
+        }
+        return payload;
+    },
 };
-
-note.loading.stop = function () {
-  return note.loading("hide");
+const loading = ((action = "show", config = {}) => {
+    const { Loading } = syncAdapters();
+    if (action === "show" && typeof Loading?.show === "function") {
+        return Loading.show(buildLoadingConfig(config));
+    }
+    if (action === "hide" && typeof Loading?.hide === "function") {
+        return Loading.hide();
+    }
+    return { action, ...config };
+});
+loading.start = function (config = {}) {
+    return loading("show", config);
 };
-
+loading.stop = function () {
+    return loading("hide");
+};
+note.loading = loading;
 note.dialog = function (config = {}) {
-  const { Dialog } = syncAdapters();
-  const payload = buildDialogConfig(config);
-
-  if (typeof Dialog?.create === "function") {
-    return Dialog.create(payload);
-  }
-
-  return payload;
+    const { Dialog } = syncAdapters();
+    const payload = buildDialogConfig(config);
+    if (typeof Dialog?.create === "function") {
+        return Dialog.create(payload);
+    }
+    return payload;
 };
-
 note.show = function (message, style, config = {}) {
-  const selectedStyle =
-    style && defaultStyles[style]
-      ? defaultStyles[style]
-      : defaultStyles.success;
-  const payload = { message, ...selectedStyle, ...config };
-
-  return Notify.create(payload);
+    const selectedStyle = style && defaultStyles[style]
+        ? defaultStyles[style]
+        : defaultStyles.success;
+    const payload = { message, ...selectedStyle, ...config };
+    return Notify.create(payload);
 };
-
 note.success = (message, config = {}) => note.show(message, "success", config);
-
 note.info = (message, config = {}) => note.show(message, "info", config);
-
 note.warning = (message, config = {}) => note.show(message, "warning", config);
-
-note.error = (error, config = {}) =>
-  note.show(resolveMessage(error), "error", config);
-
+note.error = (error, config = {}) => note.show(resolveMessage(error), "error", config);
 note.log = (...args) => console.log(...args);
-
 note.debug = (title, err) => {
-  if (err && err.message) {
-    console.log(title, JSON.stringify(err.message || {}, null, 2));
-  } else if (err) {
-    console.log(title, JSON.stringify(err || {}, null, 2));
-  } else {
-    console.log(title);
-  }
+    if (isPayload(err) && "message" in err) {
+        console.log(title, JSON.stringify(err.message ?? {}, null, 2));
+    }
+    else if (err !== undefined) {
+        console.log(title, JSON.stringify(err, null, 2));
+    }
+    else {
+        console.log(title);
+    }
 };
-
 syncAdapters();
 
-const Utils = {
-  Store: store2,
-  Config: config,
-  Storage: storage,
-  Note: note,
-  store: store2,
-  config,
-  storage,
-  note,
-  Notify,
-  configureNote,
-  conf,
+const STORAGE_NAMESPACE = "uStore";
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const logAdapterError = (adapterName, methodName, error) => {
+    console.error(`@waelio/utils ${adapterName}.${methodName} failed:`, error);
+};
+const createMemoryNamespace = () => {
+    const state = {};
+    return {
+        get(key) {
+            return hasOwn(state, key) ? state[key] : null;
+        },
+        set(key, value) {
+            state[key] = value;
+            return value;
+        },
+        remove(key) {
+            const existed = hasOwn(state, key);
+            if (existed) {
+                delete state[key];
+            }
+            return existed;
+        },
+        has(key) {
+            return hasOwn(state, key);
+        },
+    };
+};
+const createLazyNamespace = (factory) => {
+    let namespace;
+    return () => {
+        if (namespace) {
+            return namespace;
+        }
+        try {
+            namespace = factory() || createMemoryNamespace();
+        }
+        catch (error) {
+            logAdapterError(STORAGE_NAMESPACE, "namespace", error);
+            namespace = createMemoryNamespace();
+        }
+        return namespace;
+    };
+};
+const getLocalNamespace = createLazyNamespace(() => store2.namespace(STORAGE_NAMESPACE));
+const getSessionNamespace = createLazyNamespace(() => store2.session.namespace(STORAGE_NAMESPACE));
+const getNamespaceValue = (namespace, key) => {
+    if (!key) {
+        return null;
+    }
+    return typeof namespace.get === "function" ? (namespace.get(key) ?? null) : null;
+};
+const hasNamespaceValue = (namespace, key) => {
+    if (!key) {
+        return false;
+    }
+    if (typeof namespace.has === "function") {
+        return namespace.has(key);
+    }
+    const value = getNamespaceValue(namespace, key);
+    return value !== null && value !== undefined;
+};
+const setNamespaceValue = (namespace, key, value) => {
+    if (!key) {
+        return null;
+    }
+    if (typeof namespace.set === "function") {
+        namespace.set(key, value);
+    }
+    return getNamespaceValue(namespace, key);
+};
+const removeNamespaceValue = (namespace, key) => {
+    if (!key) {
+        return false;
+    }
+    if (typeof namespace.remove === "function") {
+        namespace.remove(key);
+    }
+    return !hasNamespaceValue(namespace, key);
+};
+const createStoreAdapter = (adapterName, namespaceGetter) => ({
+    get(key) {
+        try {
+            return getNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "get", error);
+            return null;
+        }
+    },
+    getItem(key) {
+        try {
+            return getNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "getItem", error);
+            return null;
+        }
+    },
+    has(key) {
+        try {
+            return hasNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "has", error);
+            return false;
+        }
+    },
+    hasItem(key) {
+        try {
+            return hasNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "hasItem", error);
+            return false;
+        }
+    },
+    set(key, value) {
+        try {
+            return setNamespaceValue(namespaceGetter(), key, value);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "set", error);
+            return null;
+        }
+    },
+    setItem(key, value) {
+        try {
+            return setNamespaceValue(namespaceGetter(), key, value);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "setItem", error);
+            return null;
+        }
+    },
+    remove(key) {
+        try {
+            return removeNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "remove", error);
+            return false;
+        }
+    },
+    removeItem(key) {
+        try {
+            return removeNamespaceValue(namespaceGetter(), key);
+        }
+        catch (error) {
+            logAdapterError(adapterName, "removeItem", error);
+            return false;
+        }
+    },
+});
+const createStateStore = () => {
+    const state = {};
+    return {
+        get(key) {
+            return hasOwn(state, key) ? state[key] : null;
+        },
+        set(key, value) {
+            state[key] = value;
+            return value;
+        },
+        remove(key) {
+            const existed = hasOwn(state, key);
+            if (existed) {
+                delete state[key];
+            }
+            return existed;
+        },
+        has(key) {
+            return hasOwn(state, key);
+        },
+        snapshot() {
+            return { ...state };
+        },
+    };
+};
+const memoryState = createStateStore();
+const memoryStorage = {
+    get(key) {
+        return memoryState.get(key);
+    },
+    getItem(key) {
+        return memoryState.get(key);
+    },
+    has(key) {
+        return memoryState.has(key);
+    },
+    hasItem(key) {
+        return memoryState.has(key);
+    },
+    set(key, value) {
+        return memoryState.set(key, value);
+    },
+    setItem(key, value) {
+        return memoryState.set(key, value);
+    },
+    remove(key) {
+        memoryState.remove(key);
+        return !memoryState.has(key);
+    },
+    removeItem(key) {
+        memoryState.remove(key);
+        return !memoryState.has(key);
+    },
+    snapshot() {
+        return memoryState.snapshot();
+    },
+};
+const serializeCookieValue = (value) => {
+    if (typeof value === "string") {
+        return value;
+    }
+    return JSON.stringify(value);
+};
+const deserializeCookieValue = (value) => {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+    try {
+        return JSON.parse(value);
+    }
+    catch (error) {
+        return value;
+    }
+};
+const cookieFallback = {};
+const readCookieValue = (key) => {
+    if (!key) {
+        return null;
+    }
+    if (typeof document === "undefined") {
+        return hasOwn(cookieFallback, key) ? cookieFallback[key] : null;
+    }
+    const cookies = document.cookie
+        .split(";")
+        .map((cookie) => cookie.trim())
+        .filter(Boolean);
+    const cookie = cookies.find((entry) => entry.startsWith(`${key}=`));
+    if (!cookie) {
+        return null;
+    }
+    const encodedValue = cookie.slice(key.length + 1);
+    return deserializeCookieValue(decodeURIComponent(encodedValue));
+};
+const writeCookieValue = (key, value) => {
+    if (!key) {
+        return null;
+    }
+    if (typeof document === "undefined") {
+        cookieFallback[key] = value;
+        return cookieFallback[key];
+    }
+    const serialized = encodeURIComponent(serializeCookieValue(value));
+    document.cookie = `${key}=${serialized}; path=/; SameSite=Lax`;
+    return readCookieValue(key);
+};
+const removeCookieValue = (key) => {
+    if (!key) {
+        return false;
+    }
+    if (typeof document === "undefined") {
+        if (hasOwn(cookieFallback, key)) {
+            delete cookieFallback[key];
+        }
+        return !hasOwn(cookieFallback, key);
+    }
+    document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+    return readCookieValue(key) === null;
+};
+const cookieStorage = {
+    get(key) {
+        try {
+            return readCookieValue(key);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "get", error);
+            return null;
+        }
+    },
+    getItem(key) {
+        try {
+            return readCookieValue(key);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "getItem", error);
+            return null;
+        }
+    },
+    has(key) {
+        try {
+            return readCookieValue(key) !== null;
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "has", error);
+            return false;
+        }
+    },
+    hasItem(key) {
+        try {
+            return readCookieValue(key) !== null;
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "hasItem", error);
+            return false;
+        }
+    },
+    set(key, value) {
+        try {
+            return writeCookieValue(key, value);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "set", error);
+            return null;
+        }
+    },
+    setItem(key, value) {
+        try {
+            return writeCookieValue(key, value);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "setItem", error);
+            return null;
+        }
+    },
+    remove(key) {
+        try {
+            return removeCookieValue(key);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "remove", error);
+            return false;
+        }
+    },
+    removeItem(key) {
+        try {
+            return removeCookieValue(key);
+        }
+        catch (error) {
+            logAdapterError("cookieStorage", "removeItem", error);
+            return false;
+        }
+    },
+};
+const signalState = createStateStore();
+const signalListeners = new Map();
+const notifySignalListeners = (key, value, previousValue, source) => {
+    const listeners = signalListeners.get(key);
+    if (!listeners || listeners.size === 0) {
+        return;
+    }
+    const change = {
+        key,
+        value,
+        previousValue,
+        source,
+    };
+    listeners.forEach((listener) => {
+        try {
+            listener(value, change);
+        }
+        catch (error) {
+            logAdapterError("signalStorage", "listener", error);
+        }
+    });
+};
+const signalStorage = {
+    get(key) {
+        return signalState.get(key);
+    },
+    getItem(key) {
+        return signalState.get(key);
+    },
+    has(key) {
+        return signalState.has(key);
+    },
+    hasItem(key) {
+        return signalState.has(key);
+    },
+    set(key, value) {
+        const previousValue = signalState.get(key);
+        const nextValue = signalState.set(key, value);
+        notifySignalListeners(key, nextValue, previousValue, "set");
+        return nextValue;
+    },
+    setItem(key, value) {
+        const previousValue = signalState.get(key);
+        const nextValue = signalState.set(key, value);
+        notifySignalListeners(key, nextValue, previousValue, "set");
+        return nextValue;
+    },
+    remove(key) {
+        const previousValue = signalState.get(key);
+        signalState.remove(key);
+        const removed = !signalState.has(key);
+        if (removed) {
+            notifySignalListeners(key, null, previousValue, "remove");
+        }
+        return removed;
+    },
+    removeItem(key) {
+        const previousValue = signalState.get(key);
+        signalState.remove(key);
+        const removed = !signalState.has(key);
+        if (removed) {
+            notifySignalListeners(key, null, previousValue, "remove");
+        }
+        return removed;
+    },
+    subscribe(key, listener) {
+        if (!key || typeof listener !== "function") {
+            return () => false;
+        }
+        const listeners = signalListeners.get(key) || new Set();
+        listeners.add(listener);
+        signalListeners.set(key, listeners);
+        return () => {
+            listeners.delete(listener);
+            if (listeners.size === 0) {
+                signalListeners.delete(key);
+            }
+            return true;
+        };
+    },
+    snapshot() {
+        return signalState.snapshot();
+    },
+};
+const localStorage$1 = createStoreAdapter("localStorage", getLocalNamespace);
+const sessionStorage$1 = createStoreAdapter("sessionStorage", getSessionNamespace);
+const uStore = {
+    config,
+    local: localStorage$1,
+    session: sessionStorage$1,
+    cookie: cookieStorage,
+    memory: memoryStorage,
+    signal: signalStorage,
 };
 
-export { Notify, Utils, conf, config, configureNote, note, storage, store2 as store };
+const Utils = {
+    Store: store2,
+    Config: config,
+    Storage: storage,
+    Note: note,
+    store: store2,
+    config,
+    storage,
+    note,
+    Notify,
+    configureNote,
+    conf,
+    uStore,
+    localStorage: localStorage$1,
+    sessionStorage: sessionStorage$1,
+    cookieStorage,
+    memoryStorage,
+    signalStorage,
+};
+
+export { Notify, Utils, conf, config, configureNote, cookieStorage, localStorage$1 as localStorage, memoryStorage, note, sessionStorage$1 as sessionStorage, signalStorage, storage, store2 as store, uStore };
 //# sourceMappingURL=utils.mjs.map

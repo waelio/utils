@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
-	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Utils = {}));
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.UStore = {}));
 })(this, (function (exports) { 'use strict';
 
 	function getDefaultExportFromCjs (x) {
@@ -451,208 +451,6 @@
 	const storage = store2.namespace("app");
 	const config = new BaseConfig({ storage });
 
-	const conf = new BaseConfig();
-
-	const dialogDefaults = {
-	    title: "Loading ...",
-	    dark: false,
-	    message: "0%",
-	    progress: {
-	        color: "primary",
-	    },
-	    persistent: false,
-	    ok: false,
-	};
-	const notifyDefaults = {
-	    timeout: 10000,
-	    position: "top",
-	};
-	const loadingDefaults = {
-	    message: "Processing ...",
-	};
-	const loadingBarDefaults = {
-	    color: "amber-7",
-	    size: "10px",
-	    position: "top",
-	};
-	const defaultStyles = {
-	    info: {
-	        icon: "info",
-	        color: "info",
-	        type: "info",
-	    },
-	    success: {
-	        icon: "check_circle",
-	        color: "positive",
-	        type: "positive",
-	    },
-	    warning: {
-	        icon: "warning",
-	        color: "warning",
-	        type: "warning",
-	    },
-	    error: {
-	        icon: "error",
-	        color: "negative",
-	        type: "negative",
-	    },
-	};
-
-	const isPayload = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-	const getGlobalQuasarAdapters = () => {
-	    const quasar = globalThis.Quasar;
-	    if (!quasar) {
-	        return {};
-	    }
-	    const { Notify, Dialog, Dark, LoadingBar, Loading, QSpinnerGears } = quasar;
-	    return {
-	        Notify,
-	        Dialog,
-	        Dark,
-	        LoadingBar,
-	        Loading,
-	        QSpinnerGears,
-	    };
-	};
-	let adapters = {
-	    Notify: null,
-	    Dialog: null,
-	    Dark: null,
-	    LoadingBar: null,
-	    Loading: null,
-	    QSpinnerGears: null,
-	    ...getGlobalQuasarAdapters(),
-	};
-	const applyDefaults = () => {
-	    const { Notify: activeNotify, LoadingBar: activeLoadingBar } = adapters;
-	    if (typeof activeNotify?.setDefaults === "function") {
-	        activeNotify.setDefaults(notifyDefaults);
-	    }
-	    if (typeof activeLoadingBar?.setDefaults === "function") {
-	        activeLoadingBar.setDefaults(loadingBarDefaults);
-	    }
-	};
-	const syncAdapters = () => {
-	    adapters = {
-	        ...getGlobalQuasarAdapters(),
-	        ...adapters,
-	    };
-	    applyDefaults();
-	    return adapters;
-	};
-	const buildLoadingConfig = (config = {}) => {
-	    const { QSpinnerGears } = syncAdapters();
-	    return {
-	        ...loadingDefaults,
-	        ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
-	        ...config,
-	    };
-	};
-	const buildDialogConfig = (config = {}) => {
-	    const { Dark, QSpinnerGears } = syncAdapters();
-	    const progressConfig = isPayload(config.progress) ? config.progress : {};
-	    return {
-	        ...dialogDefaults,
-	        dark: typeof Dark?.isActive === "boolean" ? Dark.isActive : dialogDefaults.dark,
-	        progress: {
-	            ...dialogDefaults.progress,
-	            ...(QSpinnerGears ? { spinner: QSpinnerGears } : {}),
-	            ...progressConfig,
-	        },
-	        ...config,
-	    };
-	};
-	const resolveMessage = (error) => {
-	    if (typeof error === "string") {
-	        return error;
-	    }
-	    if (!isPayload(error)) {
-	        return "Unknown error";
-	    }
-	    const response = isPayload(error.response) ? error.response : null;
-	    const responseData = response?.data;
-	    const responseDataRecord = isPayload(responseData) ? responseData : null;
-	    return (error.message ||
-	        responseDataRecord?.message ||
-	        responseData ||
-	        response ||
-	        "Unknown error");
-	};
-	const note = {};
-	const configureNote = (nextAdapters = {}) => {
-	    adapters = {
-	        ...adapters,
-	        ...nextAdapters,
-	    };
-	    syncAdapters();
-	    return note;
-	};
-	const Notify = {
-	    create(payload) {
-	        const { Notify: activeNotify } = syncAdapters();
-	        if (typeof activeNotify?.create === "function") {
-	            return activeNotify.create(payload);
-	        }
-	        return payload;
-	    },
-	    setDefaults(payload) {
-	        const { Notify: activeNotify } = syncAdapters();
-	        if (typeof activeNotify?.setDefaults === "function") {
-	            return activeNotify.setDefaults(payload);
-	        }
-	        return payload;
-	    },
-	};
-	const loading = ((action = "show", config = {}) => {
-	    const { Loading } = syncAdapters();
-	    if (action === "show" && typeof Loading?.show === "function") {
-	        return Loading.show(buildLoadingConfig(config));
-	    }
-	    if (action === "hide" && typeof Loading?.hide === "function") {
-	        return Loading.hide();
-	    }
-	    return { action, ...config };
-	});
-	loading.start = function (config = {}) {
-	    return loading("show", config);
-	};
-	loading.stop = function () {
-	    return loading("hide");
-	};
-	note.loading = loading;
-	note.dialog = function (config = {}) {
-	    const { Dialog } = syncAdapters();
-	    const payload = buildDialogConfig(config);
-	    if (typeof Dialog?.create === "function") {
-	        return Dialog.create(payload);
-	    }
-	    return payload;
-	};
-	note.show = function (message, style, config = {}) {
-	    const selectedStyle = style && defaultStyles[style]
-	        ? defaultStyles[style]
-	        : defaultStyles.success;
-	    const payload = { message, ...selectedStyle, ...config };
-	    return Notify.create(payload);
-	};
-	note.success = (message, config = {}) => note.show(message, "success", config);
-	note.info = (message, config = {}) => note.show(message, "info", config);
-	note.warning = (message, config = {}) => note.show(message, "warning", config);
-	note.error = (error, config = {}) => note.show(resolveMessage(error), "error", config);
-	note.log = (...args) => console.log(...args);
-	note.debug = (title, err) => {
-	    if (isPayload(err) && "message" in err) {
-	        console.log(title, JSON.stringify(err.message ?? {}, null, 2));
-	    }
-	    else if (err !== undefined) {
-	        console.log(title, JSON.stringify(err, null, 2));
-	    }
-	    else {
-	        console.log(title);
-	    }
-	};
-	syncAdapters();
-
 	const STORAGE_NAMESPACE = "uStore";
 	const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 	const logAdapterError = (adapterName, methodName, error) => {
@@ -1093,40 +891,17 @@
 	    signal: signalStorage,
 	};
 
-	const Utils = {
-	    Store: store2,
-	    Config: config,
-	    Storage: storage,
-	    Note: note,
-	    store: store2,
-	    config,
-	    storage,
-	    note,
-	    Notify,
-	    configureNote,
-	    conf,
-	    uStore,
-	    localStorage: localStorage$1,
-	    sessionStorage: sessionStorage$1,
-	    cookieStorage,
-	    memoryStorage,
-	    signalStorage,
-	};
+	globalThis.uStore = uStore;
 
-	exports.Notify = Notify;
-	exports.Utils = Utils;
-	exports.conf = conf;
-	exports.config = config;
-	exports.configureNote = configureNote;
 	exports.cookieStorage = cookieStorage;
+	exports.default = uStore;
 	exports.localStorage = localStorage$1;
 	exports.memoryStorage = memoryStorage;
-	exports.note = note;
 	exports.sessionStorage = sessionStorage$1;
 	exports.signalStorage = signalStorage;
-	exports.storage = storage;
-	exports.store = store2;
 	exports.uStore = uStore;
 
+	Object.defineProperty(exports, '__esModule', { value: true });
+
 }));
-//# sourceMappingURL=utils.js.map
+//# sourceMappingURL=ustore.js.map

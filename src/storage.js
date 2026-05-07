@@ -1,1 +1,0 @@
-export { storage } from "./config";

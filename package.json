@@ -2,38 +2,51 @@
   "name": "@waelio/utils",
   "version": "4.0.0",
   "description": "Utilities for configuration, storage, and optional Quasar-powered notifications",
+  "types": "types/index.d.ts",
   "main": "dist/utils.js",
   "module": "dist/utils.mjs",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "import": "./dist/utils.mjs",
       "require": "./dist/utils.js",
       "default": "./dist/utils.js"
     },
     "./config": {
+      "types": "./types/config.d.ts",
       "import": "./dist/config.mjs",
       "require": "./dist/config.js",
       "default": "./dist/config.js"
     },
     "./conf": {
+      "types": "./types/conf.d.ts",
       "import": "./dist/conf.mjs",
       "require": "./dist/conf.js",
       "default": "./dist/conf.js"
     },
     "./note": {
+      "types": "./types/note.d.ts",
       "import": "./dist/note.mjs",
       "require": "./dist/note.js",
       "default": "./dist/note.js"
     },
     "./storage": {
+      "types": "./types/storage.d.ts",
       "import": "./dist/storage.mjs",
       "require": "./dist/storage.js",
       "default": "./dist/storage.js"
     },
     "./store": {
+      "types": "./types/store.d.ts",
       "import": "./dist/store.mjs",
       "require": "./dist/store.js",
       "default": "./dist/store.js"
+    },
+    "./ustore": {
+      "types": "./types/ustore.d.ts",
+      "import": "./dist/ustore.mjs",
+      "require": "./dist/ustore.js",
+      "default": "./dist/ustore.js"
     },
     "./dist/config": {
       "import": "./dist/config.mjs",
@@ -60,6 +73,11 @@
       "require": "./dist/store.js",
       "default": "./dist/store.js"
     },
+    "./dist/ustore": {
+      "import": "./dist/ustore.mjs",
+      "require": "./dist/ustore.js",
+      "default": "./dist/ustore.js"
+    },
     "./dist/utils": {
       "import": "./dist/utils.mjs",
       "require": "./dist/utils.js",
@@ -72,7 +90,8 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "types"
   ],
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && rollup -c",
@@ -86,11 +105,14 @@
   },
   "keywords": [
     "Javascript",
+    "TypeScript",
     "Utilities",
     "helpers",
     "browser",
     "config",
     "store",
+    "ustore",
+    "storage",
     "notification",
     "quasar"
   ],
@@ -107,8 +129,12 @@
     "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/node": "^24.7.2",
     "jasmine": "^6.2.0",
-    "rollup": "^4.60.2"
+    "rollup": "^4.60.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "store2": "^2.14.4"

@@ -309,169 +309,143 @@
 	var store2 = /*@__PURE__*/getDefaultExportFromCjs(store2Exports);
 
 	var clientDefaults = {
-	  init:false,
-	  app: {    
-	    businessName: "",
-	    businessDomain: "",
-	    businessAddress: "",
-	    businessEmail: "",
-	    businessImage:  "",
-	    businessDescription: ""
-	  },
-	  settings:{
-	    locale: "en-us",
-	    darkMode: true,
-	  },
-	  Credentials: {
-	    google: {
-	      clientId: "",
-	      clientPassword: ""
+	    init: false,
+	    app: {
+	        businessName: "",
+	        businessDomain: "",
+	        businessAddress: "",
+	        businessEmail: "",
+	        businessImage: "",
+	        businessDescription: "",
 	    },
-	    facebook: {
-	      clientId: "",
-	      clientPassword: ""
+	    settings: {
+	        locale: "en-us",
+	        darkMode: true,
 	    },
-	    apple: {
-	      clientId: "",
-	      clientPassword: ""
+	    Credentials: {
+	        google: {
+	            clientId: "",
+	            clientPassword: "",
+	        },
+	        facebook: {
+	            clientId: "",
+	            clientPassword: "",
+	        },
+	        apple: {
+	            clientId: "",
+	            clientPassword: "",
+	        },
+	        twitter: {
+	            clientId: "",
+	            clientPassword: "",
+	        },
 	    },
-	    twitter: {
-	      clientId: "",
-	      clientPassword: ""
-	    }
-	  }
 	};
 
 	var devDefaults = {
-	  debug: false,
-	  localeName: "locale",
-	  modeName: "darkMode",
-	  api: "",
-	  apiPrefix: "api/v1/",
-	  crm: ""
+	    debug: false,
+	    localeName: "locale",
+	    modeName: "darkMode",
+	    api: "",
+	    apiPrefix: "api/v1/",
+	    crm: "",
 	};
 
 	var prodDefaults = {
-	  debug: false,
-	  localeName: "locale",
-	  modeName: "darkMode",
-	  apiPrefix: 'api/v1/',
-	  api:""
+	    debug: false,
+	    localeName: "locale",
+	    modeName: "darkMode",
+	    apiPrefix: "api/v1/",
+	    api: "",
 	};
 
 	var serverDefaults = {};
 
-	const normalizeConfig = (value) => value?.default ?? value ?? {};
-
-	const isBrowser = () =>
-	  typeof window !== "undefined" && typeof document !== "undefined";
-
-	const getUrgentOverrides = () =>
-	  normalizeConfig(
-	    process.env.NODE_ENV === "production" ? prodDefaults : devDefaults,
-	  );
-
-	const buildBaseStore = (storage) => {
-	  const client = normalizeConfig(clientDefaults);
-	  const server = isBrowser() ? {} : normalizeConfig(serverDefaults);
-	  const dev = getUrgentOverrides();
-	  const store = {
-	    ...client,
-	    ...server,
-	    ...dev,
-	    client,
-	    server,
-	    dev,
-	  };
-
-	  if (storage) {
-	    store.storage = storage;
-	  }
-
-	  return store;
+	const isConfigRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+	const normalizeConfig = (value) => {
+	    const resolved = isConfigRecord(value) && "default" in value ? value.default : value;
+	    return isConfigRecord(resolved) ? resolved : {};
 	};
-
+	const isBrowser = () => typeof window !== "undefined" && typeof document !== "undefined";
+	const getNodeEnv = () => typeof process !== "undefined" ? process.env?.NODE_ENV : undefined;
+	const getUrgentOverrides = () => normalizeConfig(getNodeEnv() === "production" ? prodDefaults : devDefaults);
+	const buildBaseStore = (storage) => {
+	    const client = normalizeConfig(clientDefaults);
+	    const server = isBrowser() ? {} : normalizeConfig(serverDefaults);
+	    const dev = getUrgentOverrides();
+	    const store = {
+	        ...client,
+	        ...server,
+	        ...dev,
+	        client,
+	        server,
+	        dev,
+	    };
+	    if (storage) {
+	        store.storage = storage;
+	    }
+	    return store;
+	};
 	class BaseConfig {
-	  constructor({ storage } = {}) {
-	    this._env = isBrowser() ? "client" : "server";
-	    this._storage = storage;
-	    this._store = buildBaseStore(storage);
-	  }
-
-	  set(key, value) {
-	    if (key.includes(":")) {
-	      const keys = key.split(":");
-	      let storeKey = this._store;
-
-	      keys.forEach((segment, index) => {
-	        if (keys.length === index + 1) {
-	          storeKey[segment] = value;
-	          return;
-	        }
-
-	        if (storeKey[segment] === undefined) {
-	          storeKey[segment] = {};
-	        }
-
-	        storeKey = storeKey[segment];
-	      });
-
-	      return value;
+	    constructor({ storage } = {}) {
+	        this._env = isBrowser() ? "client" : "server";
+	        this._storage = storage;
+	        this._store = buildBaseStore(storage);
 	    }
-
-	    this._store[key] = value;
-	    return value;
-	  }
-
-	  getAll() {
-	    return this._store;
-	  }
-
-	  getItem(key) {
-	    return this._store[key];
-	  }
-
-	  get(key) {
-	    if (key.includes(":")) {
-	      return this.buildNestedKey(key);
+	    set(key, value) {
+	        if (key.includes(":")) {
+	            const keys = key.split(":");
+	            let storeKey = this._store;
+	            keys.forEach((segment, index) => {
+	                if (keys.length === index + 1) {
+	                    storeKey[segment] = value;
+	                    return;
+	                }
+	                if (!isConfigRecord(storeKey[segment])) {
+	                    storeKey[segment] = {};
+	                }
+	                storeKey = storeKey[segment];
+	            });
+	            return value;
+	        }
+	        this._store[key] = value;
+	        return value;
 	    }
-
-	    return this._store[key];
-	  }
-
-	  client() {
-	    return this.getItem("client");
-	  }
-
-	  dev() {
-	    return this.getItem("dev");
-	  }
-
-	  storage() {
-	    return this._store.storage;
-	  }
-
-	  server() {
-	    return this.getItem("server");
-	  }
-
-	  store() {
-	    return this._store;
-	  }
-
-	  has(key) {
-	    return Boolean(this.get(key));
-	  }
-
-	  buildNestedKey(nestedKey) {
-	    return nestedKey
-	      .split(":")
-	      .reduce(
-	        (storeKey, segment) =>
-	          storeKey == null ? undefined : storeKey[segment],
-	        this._store,
-	      );
-	  }
+	    getAll() {
+	        return this._store;
+	    }
+	    getItem(key) {
+	        return this._store[key];
+	    }
+	    get(key) {
+	        if (key.includes(":")) {
+	            return this.buildNestedKey(key);
+	        }
+	        return this._store[key];
+	    }
+	    client() {
+	        return this.getItem("client");
+	    }
+	    dev() {
+	        return this.getItem("dev");
+	    }
+	    storage() {
+	        return this._store.storage;
+	    }
+	    server() {
+	        return this.getItem("server");
+	    }
+	    store() {
+	        return this._store;
+	    }
+	    has(key) {
+	        return Boolean(this.get(key));
+	    }
+	    buildNestedKey(nestedKey) {
+	        return nestedKey
+	            .split(":")
+	            .reduce((storeKey, segment) => isConfigRecord(storeKey) ? storeKey[segment] : undefined, this._store);
+	    }
 	}
 
 	const storage = store2.namespace("app");

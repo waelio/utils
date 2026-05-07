@@ -1,33 +1,33 @@
 export default {
-  init:false,
-  app: {    
+  init: false,
+  app: {
     businessName: "",
     businessDomain: "",
     businessAddress: "",
     businessEmail: "",
-    businessImage:  "",
-    businessDescription: ""
+    businessImage: "",
+    businessDescription: "",
   },
-  settings:{
+  settings: {
     locale: "en-us",
     darkMode: true,
   },
   Credentials: {
     google: {
       clientId: "",
-      clientPassword: ""
+      clientPassword: "",
     },
     facebook: {
       clientId: "",
-      clientPassword: ""
+      clientPassword: "",
     },
     apple: {
       clientId: "",
-      clientPassword: ""
+      clientPassword: "",
     },
     twitter: {
       clientId: "",
-      clientPassword: ""
-    }
-  }
+      clientPassword: "",
+    },
+  },
 };
