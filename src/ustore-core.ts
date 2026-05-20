@@ -9,6 +9,13 @@ type NamespaceLike = {
   set?: (key: string, value: StorageValue) => unknown;
   remove?: (key: string) => unknown;
   has?: (key: string) => boolean;
+  keys?: () => string[];
+  clear?: () => void;
+};
+
+type SetOptions = {
+  /** Time-to-live in milliseconds. Entry auto-expires after this duration. */
+  ttl?: number;
 };
 
 type SignalChange = {
@@ -57,6 +64,12 @@ const createMemoryNamespace = (): Required<NamespaceLike> => {
     },
     has(key: string) {
       return hasOwn(state, key);
+    },
+    keys() {
+      return Object.keys(state);
+    },
+    clear() {
+      Object.keys(state).forEach((k) => delete state[k]);
     },
   };
 };
@@ -209,31 +222,59 @@ const createStoreAdapter = (
   },
 });
 
+
 const createStateStore = () => {
   const state: MemoryState = {};
+  const ttlMap = new Map<string, number>();
+
+  const isExpired = (key: string): boolean => {
+    const exp = ttlMap.get(key);
+    if (exp === undefined) return false;
+    if (Date.now() >= exp) {
+      delete state[key];
+      ttlMap.delete(key);
+      return true;
+    }
+    return false;
+  };
 
   return {
     get(key: string): StorageValue | null {
+      if (isExpired(key)) return null;
       return hasOwn(state, key) ? state[key] : null;
     },
-    set(key: string, value: StorageValue): StorageValue {
+    set(key: string, value: StorageValue, options?: SetOptions): StorageValue {
       state[key] = value;
+      if (options?.ttl && options.ttl > 0) {
+        ttlMap.set(key, Date.now() + options.ttl);
+      } else {
+        ttlMap.delete(key);
+      }
       return value;
     },
     remove(key: string): boolean {
       const existed = hasOwn(state, key);
-
       if (existed) {
         delete state[key];
+        ttlMap.delete(key);
       }
-
       return existed;
     },
     has(key: string): boolean {
+      if (isExpired(key)) return false;
       return hasOwn(state, key);
     },
+    keys(): string[] {
+      return Object.keys(state).filter((k) => !isExpired(k));
+    },
+    clear(): void {
+      Object.keys(state).forEach((k) => delete state[k]);
+      ttlMap.clear();
+    },
     snapshot(): MemoryState {
-      return { ...state };
+      return Object.fromEntries(
+        Object.entries(state).filter(([k]) => !isExpired(k))
+      );
     },
   };
 };
@@ -253,11 +294,11 @@ const memoryStorage = {
   hasItem(key: string) {
     return memoryState.has(key);
   },
-  set(key: string, value: StorageValue) {
-    return memoryState.set(key, value);
+  set(key: string, value: StorageValue, options?: SetOptions) {
+    return memoryState.set(key, value, options);
   },
-  setItem(key: string, value: StorageValue) {
-    return memoryState.set(key, value);
+  setItem(key: string, value: StorageValue, options?: SetOptions) {
+    return memoryState.set(key, value, options);
   },
   remove(key: string) {
     memoryState.remove(key);
@@ -266,6 +307,12 @@ const memoryStorage = {
   removeItem(key: string) {
     memoryState.remove(key);
     return !memoryState.has(key);
+  },
+  keys() {
+    return memoryState.keys();
+  },
+  clear() {
+    memoryState.clear();
   },
   snapshot() {
     return memoryState.snapshot();
@@ -460,16 +507,16 @@ const signalStorage = {
   hasItem(key: string) {
     return signalState.has(key);
   },
-  set(key: string, value: StorageValue) {
+  set(key: string, value: StorageValue, options?: SetOptions) {
     const previousValue = signalState.get(key);
-    const nextValue = signalState.set(key, value);
+    const nextValue = signalState.set(key, value, options);
 
     notifySignalListeners(key, nextValue, previousValue, "set");
     return nextValue;
   },
-  setItem(key: string, value: StorageValue) {
+  setItem(key: string, value: StorageValue, options?: SetOptions) {
     const previousValue = signalState.get(key);
-    const nextValue = signalState.set(key, value);
+    const nextValue = signalState.set(key, value, options);
 
     notifySignalListeners(key, nextValue, previousValue, "set");
     return nextValue;
@@ -495,6 +542,18 @@ const signalStorage = {
     }
 
     return removed;
+  },
+  keys() {
+    return signalState.keys();
+  },
+  clear() {
+    const allKeys = signalState.keys();
+    allKeys.forEach((key) => {
+      const previousValue = signalState.get(key);
+      signalState.remove(key);
+      notifySignalListeners(key, null, previousValue, "remove");
+    });
+    signalState.clear();
   },
   subscribe(key: string, listener: SignalListener) {
     if (!key || typeof listener !== "function") {

@@ -107,4 +107,57 @@ describe("uStore adapters", () => {
     );
     expect(typeof uStoreModule.signalStorage.subscribe).toEqual("function");
   });
+
+  it("lists keys in memory storage", () => {
+    const key1 = `keys-test-1:${Date.now()}`;
+    const key2 = `keys-test-2:${Date.now()}`;
+    memoryStorage.set(key1, "a");
+    memoryStorage.set(key2, "b");
+    const keys = memoryStorage.keys();
+    expect(keys).toContain(key1);
+    expect(keys).toContain(key2);
+    memoryStorage.remove(key1);
+    memoryStorage.remove(key2);
+  });
+
+  it("clears all memory storage entries", () => {
+    memoryStorage.set("clear-test-1", 1);
+    memoryStorage.set("clear-test-2", 2);
+    memoryStorage.clear();
+    expect(memoryStorage.keys().length).toEqual(0);
+  });
+
+  it("auto-expires entries with TTL in memory storage", (done) => {
+    const key = `ttl-test:${Date.now()}`;
+    memoryStorage.set(key, "expires-soon", { ttl: 50 });
+    expect(memoryStorage.get(key)).toEqual("expires-soon");
+    setTimeout(() => {
+      expect(memoryStorage.get(key)).toBeNull();
+      expect(memoryStorage.has(key)).toBeFalse();
+      done();
+    }, 80);
+  });
+
+  it("lists keys and clears signal storage", () => {
+    const key1 = `sig-keys-1:${Date.now()}`;
+    const key2 = `sig-keys-2:${Date.now()}`;
+    signalStorage.set(key1, "x");
+    signalStorage.set(key2, "y");
+    expect(signalStorage.keys()).toContain(key1);
+    expect(signalStorage.keys()).toContain(key2);
+    signalStorage.clear();
+    expect(signalStorage.keys().length).toEqual(0);
+  });
+
+  it("notifies listeners on signal storage clear", () => {
+    const key = `sig-clear:${Date.now()}`;
+    const changes = [];
+    signalStorage.set(key, "val");
+    const stop = signalStorage.subscribe(key, (value) => {
+      changes.push(value);
+    });
+    signalStorage.clear();
+    expect(changes).toContain(null);
+    stop();
+  });
 });
