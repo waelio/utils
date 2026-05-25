@@ -1,6 +1,6 @@
 {
   "name": "@waelio/utils",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "Universal storage utilities for browser and Node.js — localStorage, sessionStorage, cookies, memory, and reactive signal storage. Works with Vue, Nuxt, Quasar, and plain JS/TS.",
   "types": "types/index.d.ts",
   "main": "dist/utils.js",
@@ -131,6 +131,9 @@
     "url": "https://github.com/waelio/utils/issues"
   },
   "homepage": "https://github.com/waelio/utils#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18"
   },
